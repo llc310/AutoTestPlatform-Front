@@ -1,0 +1,3780 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/account/profile/change/:
+    post:
+      operationId: account_profile_change_create
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/account/profile/get_all_profile/:
+    get:
+      operationId: account_profile_get_all_profile_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Account
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAllProfileList'
+          description: ''
+  /api/account/profile/login/:
+    post:
+      operationId: account_profile_login_create
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/account/profile/profile/:
+    get:
+      operationId: account_profile_profile_retrieve
+      tags:
+      - Account
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /api/account/profile/reset_password/:
+    post:
+      operationId: account_profile_reset_password_create
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/account/profile/upload_img/:
+    post:
+      operationId: account_profile_upload_img_create
+      tags:
+      - Account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeadImgRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HeadImgRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HeadImgRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeadImg'
+          description: ''
+  /api/case_api/case/:
+    get:
+      operationId: case_api_case_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCaseAPIList'
+          description: ''
+    post:
+      operationId: case_api_case_create
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseAPIRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseAPIRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseAPIRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPI'
+          description: ''
+  /api/case_api/case/{id}/:
+    get:
+      operationId: case_api_case_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api.
+        required: true
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPI'
+          description: ''
+    put:
+      operationId: case_api_case_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api.
+        required: true
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseAPIRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseAPIRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseAPIRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPI'
+          description: ''
+    patch:
+      operationId: case_api_case_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api.
+        required: true
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseAPIRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseAPIRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseAPIRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPI'
+          description: ''
+    delete:
+      operationId: case_api_case_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api.
+        required: true
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/case_api/case_api_info/:
+    get:
+      operationId: case_api_case_api_info_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCaseAPIInfoList'
+          description: ''
+    post:
+      operationId: case_api_case_api_info_create
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseAPIInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseAPIInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseAPIInfoRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPIInfo'
+          description: ''
+  /api/case_api/case_api_info/{id}/:
+    get:
+      operationId: case_api_case_api_info_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api info.
+        required: true
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPIInfo'
+          description: ''
+    put:
+      operationId: case_api_case_api_info_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api info.
+        required: true
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseAPIInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseAPIInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseAPIInfoRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPIInfo'
+          description: ''
+    patch:
+      operationId: case_api_case_api_info_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api info.
+        required: true
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseAPIInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseAPIInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseAPIInfoRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseAPIInfo'
+          description: ''
+    delete:
+      operationId: case_api_case_api_info_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case api info.
+        required: true
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/case_api/endpoint/:
+    get:
+      operationId: case_api_endpoint_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEndpointList'
+          description: ''
+    post:
+      operationId: case_api_endpoint_create
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndpointRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EndpointRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EndpointRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Endpoint'
+          description: ''
+  /api/case_api/endpoint/{id}/:
+    get:
+      operationId: case_api_endpoint_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this endpoint.
+        required: true
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Endpoint'
+          description: ''
+    put:
+      operationId: case_api_endpoint_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this endpoint.
+        required: true
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndpointRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EndpointRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EndpointRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Endpoint'
+          description: ''
+    patch:
+      operationId: case_api_endpoint_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this endpoint.
+        required: true
+      tags:
+      - Case_API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEndpointRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEndpointRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEndpointRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Endpoint'
+          description: ''
+    delete:
+      operationId: case_api_endpoint_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this endpoint.
+        required: true
+      tags:
+      - Case_API
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/case_ui/case/:
+    get:
+      operationId: case_ui_case_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCaseUIList'
+          description: ''
+    post:
+      operationId: case_ui_case_create
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseUIRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseUIRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseUIRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUI'
+          description: ''
+  /api/case_ui/case/{id}/:
+    get:
+      operationId: case_ui_case_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui.
+        required: true
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUI'
+          description: ''
+    put:
+      operationId: case_ui_case_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui.
+        required: true
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseUIRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseUIRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseUIRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUI'
+          description: ''
+    patch:
+      operationId: case_ui_case_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui.
+        required: true
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseUIRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseUIRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseUIRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUI'
+          description: ''
+    delete:
+      operationId: case_ui_case_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui.
+        required: true
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/case_ui/case/get_single_case/:
+    get:
+      operationId: case_ui_case_get_single_case_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCaseUIList'
+          description: ''
+  /api/case_ui/case_ui_info/:
+    get:
+      operationId: case_ui_case_ui_info_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCaseUIInfoList'
+          description: ''
+    post:
+      operationId: case_ui_case_ui_info_create
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseUIInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseUIInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseUIInfoRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUIInfo'
+          description: ''
+  /api/case_ui/case_ui_info/{id}/:
+    get:
+      operationId: case_ui_case_ui_info_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui info.
+        required: true
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUIInfo'
+          description: ''
+    put:
+      operationId: case_ui_case_ui_info_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui info.
+        required: true
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseUIInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CaseUIInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CaseUIInfoRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUIInfo'
+          description: ''
+    patch:
+      operationId: case_ui_case_ui_info_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui info.
+        required: true
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseUIInfoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseUIInfoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCaseUIInfoRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseUIInfo'
+          description: ''
+    delete:
+      operationId: case_ui_case_ui_info_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this case ui info.
+        required: true
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/case_ui/case_ui_info/get_single_caseuiinfo/:
+    get:
+      operationId: case_ui_case_ui_info_get_single_caseuiinfo_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCaseUIInfoList'
+          description: ''
+  /api/case_ui/element/:
+    get:
+      operationId: case_ui_element_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedElementList'
+          description: ''
+    post:
+      operationId: case_ui_element_create
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ElementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ElementRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+          description: ''
+  /api/case_ui/element/{id}/:
+    get:
+      operationId: case_ui_element_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this element.
+        required: true
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+          description: ''
+    put:
+      operationId: case_ui_element_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this element.
+        required: true
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ElementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ElementRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+          description: ''
+    patch:
+      operationId: case_ui_element_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this element.
+        required: true
+      tags:
+      - Case_UI
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedElementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedElementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedElementRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Element'
+          description: ''
+    delete:
+      operationId: case_ui_element_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this element.
+        required: true
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/case_ui/element/get_element/:
+    get:
+      operationId: case_ui_element_get_element_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Case_UI
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedElementList'
+          description: ''
+  /api/project/config/:
+    get:
+      operationId: project_config_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConfigList'
+          description: ''
+    post:
+      operationId: project_config_create
+      tags:
+      - Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfigRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+          description: ''
+  /api/project/config/{id}/:
+    get:
+      operationId: project_config_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this config.
+        required: true
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+          description: ''
+    put:
+      operationId: project_config_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this config.
+        required: true
+      tags:
+      - Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfigRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+          description: ''
+    patch:
+      operationId: project_config_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this config.
+        required: true
+      tags:
+      - Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedConfigRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedConfigRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedConfigRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+          description: ''
+    delete:
+      operationId: project_config_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this config.
+        required: true
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/project/project/:
+    get:
+      operationId: project_project_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectList'
+          description: ''
+    post:
+      operationId: project_project_create
+      tags:
+      - Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /api/project/project/{id}/:
+    get:
+      operationId: project_project_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this project.
+        required: true
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    put:
+      operationId: project_project_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this project.
+        required: true
+      tags:
+      - Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    patch:
+      operationId: project_project_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this project.
+        required: true
+      tags:
+      - Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    delete:
+      operationId: project_project_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this project.
+        required: true
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/project/project/get_all_project/:
+    get:
+      operationId: project_project_get_all_project_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectUserList'
+          description: ''
+  /api/project/project/get_single_user_project/:
+    get:
+      operationId: project_project_get_single_user_project_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Project
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectList'
+          description: ''
+  /api/schema/openapi.json/:
+    get:
+      operationId: schema_openapi.json_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - ht
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/suite/runresult/{id}/:
+    get:
+      operationId: suite_runresult_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this run result.
+        required: true
+      tags:
+      - Suite
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunResult'
+          description: ''
+  /api/suite/static/{path}:
+    get:
+      operationId: suite_static_retrieve
+      parameters:
+      - in: path
+        name: path
+        schema:
+          type: string
+        required: true
+      tags:
+      - Suite
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/suite/suite/:
+    get:
+      operationId: suite_suite_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - Suite
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSuiteList'
+          description: ''
+    post:
+      operationId: suite_suite_create
+      tags:
+      - Suite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+  /api/suite/suite/{id}/:
+    get:
+      operationId: suite_suite_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+    put:
+      operationId: suite_suite_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+    patch:
+      operationId: suite_suite_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSuiteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSuiteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSuiteRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+    delete:
+      operationId: suite_suite_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/suite/suite/{id}/run/:
+    post:
+      operationId: suite_suite_run_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+  /api/suite/suite/{id}/webhook/:
+    get:
+      operationId: suite_suite_webhook_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+    post:
+      operationId: suite_suite_webhook_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this suite.
+        required: true
+      tags:
+      - Suite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SuiteRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suite'
+          description: ''
+  /api/system/department/:
+    get:
+      operationId: system_department_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDepartmentList'
+          description: ''
+    post:
+      operationId: system_department_create
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+  /api/system/department/{id}/:
+    get:
+      operationId: system_department_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    put:
+      operationId: system_department_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    patch:
+      operationId: system_department_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+    delete:
+      operationId: system_department_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this department.
+        required: true
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/system/position/:
+    get:
+      operationId: system_position_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPositionList'
+          description: ''
+    post:
+      operationId: system_position_create
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PositionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PositionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PositionRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+  /api/system/position/{id}/:
+    get:
+      operationId: system_position_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this position.
+        required: true
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+    put:
+      operationId: system_position_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this position.
+        required: true
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PositionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PositionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PositionRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+    patch:
+      operationId: system_position_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this position.
+        required: true
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPositionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPositionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPositionRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+          description: ''
+    delete:
+      operationId: system_position_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this position.
+        required: true
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/system/role/:
+    get:
+      operationId: system_role_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoleList'
+          description: ''
+    post:
+      operationId: system_role_create
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/system/role/{id}/:
+    get:
+      operationId: system_role_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    put:
+      operationId: system_role_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    patch:
+      operationId: system_role_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - System
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    delete:
+      operationId: system_role_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - System
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AllProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: 昵称
+          maxLength: 32
+      required:
+      - id
+      - name
+    CaseAPI:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        caseapiinfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseAPIInfo'
+        name:
+          type: string
+          title: 接口测试用例名称
+          maxLength: 32
+        project:
+          type: integer
+          title: 项目id
+      required:
+      - caseapiinfo
+      - id
+      - name
+      - project
+    CaseAPIInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        endpoint:
+          $ref: '#/components/schemas/Endpoint'
+        allure:
+          nullable: true
+          title: Allure参数
+        extract:
+          nullable: true
+          title: 提取参数
+        parametrize:
+          nullable: true
+          title: 参数化参数
+        validate:
+          nullable: true
+          title: 断言参数
+      required:
+      - endpoint
+      - id
+    CaseAPIInfoRequest:
+      type: object
+      properties:
+        endpoint:
+          $ref: '#/components/schemas/EndpointRequest'
+        allure:
+          nullable: true
+          title: Allure参数
+        extract:
+          nullable: true
+          title: 提取参数
+        parametrize:
+          nullable: true
+          title: 参数化参数
+        validate:
+          nullable: true
+          title: 断言参数
+      required:
+      - endpoint
+    CaseAPIRequest:
+      type: object
+      properties:
+        caseapiinfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseAPIInfoRequest'
+        name:
+          type: string
+          minLength: 1
+          title: 接口测试用例名称
+          maxLength: 32
+        project:
+          type: integer
+          title: 项目id
+      required:
+      - caseapiinfo
+      - name
+      - project
+    CaseUI:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        step_count:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          title: UI测试用例名称
+          maxLength: 64
+        project:
+          type: integer
+          title: 项目id
+        caseuiinfo:
+          type: array
+          items:
+            type: integer
+            title: Ui测试用例id
+          title: Ui测试用例id
+      required:
+      - caseuiinfo
+      - id
+      - name
+      - project
+      - step_count
+    CaseUIInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        step:
+          type: array
+          items:
+            $ref: '#/components/schemas/Step'
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: 测试步骤执行顺序
+        name:
+          type: string
+          title: Ui测试步骤名称
+          maxLength: 32
+        allure:
+          nullable: true
+          title: Allure参数
+        parametrize:
+          nullable: true
+          title: 参数化参数
+        validate:
+          nullable: true
+          title: 断言参数
+      required:
+      - id
+      - name
+      - order
+      - step
+    CaseUIInfoRequest:
+      type: object
+      properties:
+        step:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepRequest'
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: 测试步骤执行顺序
+        name:
+          type: string
+          minLength: 1
+          title: Ui测试步骤名称
+          maxLength: 32
+        allure:
+          nullable: true
+          title: Allure参数
+        parametrize:
+          nullable: true
+          title: 参数化参数
+        validate:
+          nullable: true
+          title: 断言参数
+      required:
+      - name
+      - order
+      - step
+    CaseUIRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: UI测试用例名称
+          maxLength: 64
+        project:
+          type: integer
+          title: 项目id
+        caseuiinfo:
+          type: array
+          items:
+            type: integer
+            title: Ui测试用例id
+          title: Ui测试用例id
+      required:
+      - caseuiinfo
+      - name
+      - project
+    Config:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        conftest:
+          type: string
+          title: Pytest项目配置文件
+        project:
+          type: integer
+          title: 项目
+      required:
+      - id
+      - project
+    ConfigRequest:
+      type: object
+      properties:
+        conftest:
+          type: string
+          minLength: 1
+          title: Pytest项目配置文件
+        project:
+          type: integer
+          title: 项目
+      required:
+      - project
+    Department:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        leader:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        name:
+          type: string
+          title: 部门名称
+          maxLength: 32
+        description:
+          type: string
+          title: 部门描述
+          maxLength: 128
+      required:
+      - id
+      - leader
+      - name
+    DepartmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 部门名称
+          maxLength: 32
+        description:
+          type: string
+          minLength: 1
+          title: 部门描述
+          maxLength: 128
+      required:
+      - name
+    Element:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: 元素名称
+          maxLength: 32
+        by:
+          type: string
+          title: 定位方式
+          maxLength: 32
+        locator:
+          type: string
+          title: 定位路径
+        project:
+          type: integer
+          title: 项目id
+      required:
+      - by
+      - id
+      - locator
+      - name
+      - project
+    ElementRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 元素名称
+          maxLength: 32
+        by:
+          type: string
+          minLength: 1
+          title: 定位方式
+          maxLength: 32
+        locator:
+          type: string
+          minLength: 1
+          title: 定位路径
+        project:
+          type: integer
+          title: 项目id
+      required:
+      - by
+      - locator
+      - name
+      - project
+    Endpoint:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        method:
+          type: string
+          title: 请求方法
+          maxLength: 8
+        url:
+          type: string
+          title: 网址
+          maxLength: 255
+        params:
+          nullable: true
+          title: 查询字符串
+        data:
+          nullable: true
+          title: 表单参数
+        json:
+          nullable: true
+          title: JSON参数
+        cookies:
+          nullable: true
+          title: COOKIE信息
+        headers:
+          nullable: true
+          title: 请求头
+        project:
+          type: integer
+          title: 项目id
+      required:
+      - id
+      - method
+      - project
+      - url
+    EndpointRequest:
+      type: object
+      properties:
+        method:
+          type: string
+          minLength: 1
+          title: 请求方法
+          maxLength: 8
+        url:
+          type: string
+          minLength: 1
+          title: 网址
+          maxLength: 255
+        params:
+          nullable: true
+          title: 查询字符串
+        data:
+          nullable: true
+          title: 表单参数
+        json:
+          nullable: true
+          title: JSON参数
+        cookies:
+          nullable: true
+          title: COOKIE信息
+        headers:
+          nullable: true
+          title: 请求头
+        project:
+          type: integer
+          title: 项目id
+      required:
+      - method
+      - project
+      - url
+    HeadImg:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        head_img:
+          type: string
+          format: uri
+          title: 头像
+      required:
+      - head_img
+      - id
+      - user
+    HeadImgRequest:
+      type: object
+      properties:
+        head_img:
+          type: string
+          format: binary
+          title: 头像
+      required:
+      - head_img
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+      - username
+    PaginatedAllProfileList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllProfile'
+    PaginatedCaseAPIInfoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseAPIInfo'
+    PaginatedCaseAPIList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseAPI'
+    PaginatedCaseUIInfoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseUIInfo'
+    PaginatedCaseUIList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseUI'
+    PaginatedConfigList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Config'
+    PaginatedDepartmentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Department'
+    PaginatedElementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Element'
+    PaginatedEndpointList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Endpoint'
+    PaginatedPositionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Position'
+    PaginatedProjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    PaginatedProjectUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectUser'
+    PaginatedRoleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+    PaginatedSuiteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Suite'
+    PatchedCaseAPIInfoRequest:
+      type: object
+      properties:
+        endpoint:
+          $ref: '#/components/schemas/EndpointRequest'
+        allure:
+          nullable: true
+          title: Allure参数
+        extract:
+          nullable: true
+          title: 提取参数
+        parametrize:
+          nullable: true
+          title: 参数化参数
+        validate:
+          nullable: true
+          title: 断言参数
+    PatchedCaseAPIRequest:
+      type: object
+      properties:
+        caseapiinfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseAPIInfoRequest'
+        name:
+          type: string
+          minLength: 1
+          title: 接口测试用例名称
+          maxLength: 32
+        project:
+          type: integer
+          title: 项目id
+    PatchedCaseUIInfoRequest:
+      type: object
+      properties:
+        step:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepRequest'
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: 测试步骤执行顺序
+        name:
+          type: string
+          minLength: 1
+          title: Ui测试步骤名称
+          maxLength: 32
+        allure:
+          nullable: true
+          title: Allure参数
+        parametrize:
+          nullable: true
+          title: 参数化参数
+        validate:
+          nullable: true
+          title: 断言参数
+    PatchedCaseUIRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: UI测试用例名称
+          maxLength: 64
+        project:
+          type: integer
+          title: 项目id
+        caseuiinfo:
+          type: array
+          items:
+            type: integer
+            title: Ui测试用例id
+          title: Ui测试用例id
+    PatchedConfigRequest:
+      type: object
+      properties:
+        conftest:
+          type: string
+          minLength: 1
+          title: Pytest项目配置文件
+        project:
+          type: integer
+          title: 项目
+    PatchedDepartmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 部门名称
+          maxLength: 32
+        description:
+          type: string
+          minLength: 1
+          title: 部门描述
+          maxLength: 128
+    PatchedElementRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 元素名称
+          maxLength: 32
+        by:
+          type: string
+          minLength: 1
+          title: 定位方式
+          maxLength: 32
+        locator:
+          type: string
+          minLength: 1
+          title: 定位路径
+        project:
+          type: integer
+          title: 项目id
+    PatchedEndpointRequest:
+      type: object
+      properties:
+        method:
+          type: string
+          minLength: 1
+          title: 请求方法
+          maxLength: 8
+        url:
+          type: string
+          minLength: 1
+          title: 网址
+          maxLength: 255
+        params:
+          nullable: true
+          title: 查询字符串
+        data:
+          nullable: true
+          title: 表单参数
+        json:
+          nullable: true
+          title: JSON参数
+        cookies:
+          nullable: true
+          title: COOKIE信息
+        headers:
+          nullable: true
+          title: 请求头
+        project:
+          type: integer
+          title: 项目id
+    PatchedPositionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 职位名称
+          maxLength: 32
+        is_leader:
+          type: boolean
+          title: 是否负责人
+    PatchedProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 项目名称
+          maxLength: 32
+        description:
+          type: string
+          minLength: 1
+          title: 项目简介
+          maxLength: 128
+        base_url:
+          type: string
+          minLength: 1
+          title: 项目网址
+        project_leader:
+          type: integer
+          nullable: true
+          title: 项目管理人
+        user_list:
+          type: array
+          items:
+            type: integer
+            title: 项目成员
+          title: 项目成员
+    PatchedRoleRequest:
+      type: object
+      properties:
+        user:
+          type: integer
+          writeOnly: true
+          title: 用户
+        department:
+          type: integer
+          writeOnly: true
+          title: 部门
+        position:
+          type: integer
+          writeOnly: true
+          title: 职位
+    PatchedSuiteRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 套件名称
+          maxLength: 32
+        description:
+          type: string
+          title: 套件名称
+          maxLength: 32
+        run_type:
+          allOf:
+          - $ref: '#/components/schemas/RunTypeEnum'
+          title: 运行模式
+        cron:
+          type: string
+          title: 运行表达式
+          maxLength: 32
+        hook:
+          type: string
+          title: Hook密钥
+          maxLength: 255
+        schedule:
+          type: integer
+          nullable: true
+        project:
+          type: integer
+          title: 项目id
+        case_ui_list:
+          type: array
+          items:
+            type: integer
+            title: UI测试用例id
+          title: UI测试用例id
+        case_api_list:
+          type: array
+          items:
+            type: integer
+            title: 接口测试用例id
+          title: 接口测试用例id
+    Position:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: 职位名称
+          maxLength: 32
+        is_leader:
+          type: boolean
+          title: 是否负责人
+      required:
+      - id
+      - name
+    PositionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 职位名称
+          maxLength: 32
+        is_leader:
+          type: boolean
+          title: 是否负责人
+      required:
+      - name
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        token:
+          type: string
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        role_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+          readOnly: true
+        name:
+          type: string
+          title: 昵称
+          maxLength: 32
+        head_img:
+          type: string
+          title: 头像
+          maxLength: 255
+      required:
+      - head_img
+      - id
+      - name
+      - role_list
+      - token
+      - user
+      - username
+    ProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 昵称
+          maxLength: 32
+        head_img:
+          type: string
+          minLength: 1
+          title: 头像
+          maxLength: 255
+      required:
+      - head_img
+      - name
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: 项目名称
+          maxLength: 32
+        description:
+          type: string
+          title: 项目简介
+          maxLength: 128
+        base_url:
+          type: string
+          title: 项目网址
+        project_leader:
+          type: integer
+          nullable: true
+          title: 项目管理人
+        user_list:
+          type: array
+          items:
+            type: integer
+            title: 项目成员
+          title: 项目成员
+      required:
+      - id
+      - name
+    ProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 项目名称
+          maxLength: 32
+        description:
+          type: string
+          minLength: 1
+          title: 项目简介
+          maxLength: 128
+        base_url:
+          type: string
+          minLength: 1
+          title: 项目网址
+        project_leader:
+          type: integer
+          nullable: true
+          title: 项目管理人
+        user_list:
+          type: array
+          items:
+            type: integer
+            title: 项目成员
+          title: 项目成员
+      required:
+      - name
+    ProjectUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        project_leader:
+          $ref: '#/components/schemas/UserProfile'
+        user_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProfile'
+        name:
+          type: string
+          title: 项目名称
+          maxLength: 32
+        description:
+          type: string
+          title: 项目简介
+          maxLength: 128
+        base_url:
+          type: string
+          title: 项目网址
+      required:
+      - id
+      - name
+      - project_leader
+      - user_list
+    ResetRequest:
+      type: object
+      properties:
+        new_password:
+          type: string
+          minLength: 6
+        confirm_password:
+          type: string
+          minLength: 6
+      required:
+      - confirm_password
+      - new_password
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user_detail:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        department_detail:
+          allOf:
+          - $ref: '#/components/schemas/Department'
+          readOnly: true
+        position_detail:
+          allOf:
+          - $ref: '#/components/schemas/Position'
+          readOnly: true
+      required:
+      - department_detail
+      - id
+      - position_detail
+      - user_detail
+    RoleRequest:
+      type: object
+      properties:
+        user:
+          type: integer
+          writeOnly: true
+          title: 用户
+        department:
+          type: integer
+          writeOnly: true
+          title: 部门
+        position:
+          type: integer
+          writeOnly: true
+          title: 职位
+      required:
+      - department
+      - position
+      - user
+    RunResult:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        report_url:
+          type: string
+          readOnly: true
+        log_url:
+          type: string
+          readOnly: true
+        yaml_url:
+          type: string
+          readOnly: true
+        artifacts_url:
+          type: string
+          readOnly: true
+        path:
+          type: string
+          title: 用例路径
+          maxLength: 256
+        is_pass:
+          type: boolean
+          title: 是否通过
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          title: 用例状态
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+        create_datetime:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 创建时间
+        update_datetime:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 更新时间
+        suite:
+          type: integer
+          title: 测试套件id
+      required:
+      - artifacts_url
+      - create_datetime
+      - id
+      - log_url
+      - path
+      - report_url
+      - suite
+      - update_datetime
+      - yaml_url
+    RunTypeEnum:
+      enum:
+      - O
+      - C
+      - WEBHOOK
+      type: string
+      description: |-
+        * `O` - Once
+        * `C` - Cron
+        * `WEBHOOK` - Webhook
+    StatusEnum:
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - -1
+      type: integer
+      description: |-
+        * `0` - 初始化
+        * `1` - 正在执行
+        * `2` - 正在输出报告
+        * `3` - 执行完毕
+        * `4` - 报告输出完毕
+        * `-1` - 执行出错
+    Step:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        element:
+          type: array
+          items:
+            $ref: '#/components/schemas/Element'
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: 页面操作执行顺序
+        action:
+          type: string
+          title: 页面操作名称
+          maxLength: 64
+        keyword:
+          type: string
+          title: 页面操作关键字
+          maxLength: 64
+        args:
+          title: 函数参数
+      required:
+      - action
+      - element
+      - id
+      - keyword
+      - order
+    StepRequest:
+      type: object
+      properties:
+        element:
+          type: array
+          items:
+            $ref: '#/components/schemas/ElementRequest'
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: 页面操作执行顺序
+        action:
+          type: string
+          minLength: 1
+          title: 页面操作名称
+          maxLength: 64
+        keyword:
+          type: string
+          minLength: 1
+          title: 页面操作关键字
+          maxLength: 64
+        args:
+          title: 函数参数
+      required:
+      - action
+      - element
+      - keyword
+      - order
+    Suite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: 套件名称
+          maxLength: 32
+        description:
+          type: string
+          title: 套件名称
+          maxLength: 32
+        run_type:
+          allOf:
+          - $ref: '#/components/schemas/RunTypeEnum'
+          title: 运行模式
+        cron:
+          type: string
+          title: 运行表达式
+          maxLength: 32
+        hook:
+          type: string
+          title: Hook密钥
+          maxLength: 255
+        schedule:
+          type: integer
+          nullable: true
+        project:
+          type: integer
+          title: 项目id
+        case_ui_list:
+          type: array
+          items:
+            type: integer
+            title: UI测试用例id
+          title: UI测试用例id
+        case_api_list:
+          type: array
+          items:
+            type: integer
+            title: 接口测试用例id
+          title: 接口测试用例id
+      required:
+      - id
+      - name
+      - project
+    SuiteRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 套件名称
+          maxLength: 32
+        description:
+          type: string
+          title: 套件名称
+          maxLength: 32
+        run_type:
+          allOf:
+          - $ref: '#/components/schemas/RunTypeEnum'
+          title: 运行模式
+        cron:
+          type: string
+          title: 运行表达式
+          maxLength: 32
+        hook:
+          type: string
+          title: Hook密钥
+          maxLength: 255
+        schedule:
+          type: integer
+          nullable: true
+        project:
+          type: integer
+          title: 项目id
+        case_ui_list:
+          type: array
+          items:
+            type: integer
+            title: UI测试用例id
+          title: UI测试用例id
+        case_api_list:
+          type: array
+          items:
+            type: integer
+            title: 接口测试用例id
+          title: 接口测试用例id
+      required:
+      - name
+      - project
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        head_img:
+          type: string
+          readOnly: true
+      required:
+      - head_img
+      - id
+      - name
+    UserRole:
+      type: object
+      properties:
+        department:
+          type: string
+        position:
+          type: string
+        is_leader:
+          type: boolean
+      required:
+      - department
+      - is_leader
+      - position
+    UserRoleRequest:
+      type: object
+      properties:
+        department:
+          type: string
+          minLength: 1
+        position:
+          type: string
+          minLength: 1
+        is_leader:
+          type: boolean
+      required:
+      - department
+      - is_leader
+      - position
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

@@ -54,6 +54,16 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/case_ui/caseList.vue'),
       },
       {
+        path: 'case_edit/:id?',
+        name: 'case_ui-case_edit',
+        meta: {
+          title: '修改用例信息',
+          singleTab: true,
+          hidden: true,
+        },
+        component: () => import('@/views/case_ui/case_edit.vue'),
+      },
+      {
         path: 'case',
         name: 'case_ui-case',
         meta: {

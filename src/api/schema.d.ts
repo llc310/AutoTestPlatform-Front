@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/account/profile/get_all_profile/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["account_profile_get_all_profile_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/account/profile/login/": {
         parameters: {
             query?: never;
@@ -62,6 +78,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["account_profile_reset_password_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/account/profile/upload_img/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["account_profile_upload_img_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -196,6 +228,70 @@ export interface paths {
         patch: operations["case_ui_case_partial_update"];
         trace?: never;
     };
+    "/api/case_ui/case/get_single_case/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["case_ui_case_get_single_case_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/case_ui/case_ui_info/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["case_ui_case_ui_info_list"];
+        put?: never;
+        post: operations["case_ui_case_ui_info_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/case_ui/case_ui_info/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["case_ui_case_ui_info_retrieve"];
+        put: operations["case_ui_case_ui_info_update"];
+        post?: never;
+        delete: operations["case_ui_case_ui_info_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["case_ui_case_ui_info_partial_update"];
+        trace?: never;
+    };
+    "/api/case_ui/case_ui_info/get_single_caseuiinfo/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["case_ui_case_ui_info_get_single_caseuiinfo_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/case_ui/element/": {
         parameters: {
             query?: never;
@@ -226,6 +322,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["case_ui_element_partial_update"];
+        trace?: never;
+    };
+    "/api/case_ui/element/get_element/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["case_ui_element_get_element_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/project/config/": {
@@ -290,6 +402,38 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["project_project_partial_update"];
+        trace?: never;
+    };
+    "/api/project/project/get_all_project/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["project_project_get_all_project_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/project/project/get_single_user_project/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["project_project_get_single_user_project_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/schema/openapi.json/": {
@@ -510,6 +654,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AllProfile: {
+            readonly id: number;
+            /** 昵称 */
+            name: string;
+        };
         CaseAPI: {
             readonly id: number;
             caseapiinfo: components["schemas"]["CaseAPIInfo"][];
@@ -550,41 +699,54 @@ export interface components {
         };
         CaseUI: {
             readonly id: number;
-            caseuiinfo: components["schemas"]["CaseUIInfo"][];
+            readonly step_count: string;
+            /** UI测试用例名称 */
+            name: string;
             /** 项目id */
             project: number;
+            /** Ui测试用例id */
+            caseuiinfo: number[];
         };
         CaseUIInfo: {
             readonly id: number;
-            element: components["schemas"]["Element"][];
-            /** Ui测试用例名称 */
+            step: components["schemas"]["Step"][];
+            /**
+             * 测试步骤执行顺序
+             * Format: int64
+             */
+            order: number;
+            /** Ui测试步骤名称 */
             name: string;
             /** Allure参数 */
             allure?: unknown;
-            /** 用例步骤 */
-            step?: unknown;
             /** 参数化参数 */
             parametrize?: unknown;
             /** 断言参数 */
             validate?: unknown;
         };
         CaseUIInfoRequest: {
-            element: components["schemas"]["ElementRequest"][];
-            /** Ui测试用例名称 */
+            step: components["schemas"]["StepRequest"][];
+            /**
+             * 测试步骤执行顺序
+             * Format: int64
+             */
+            order: number;
+            /** Ui测试步骤名称 */
             name: string;
             /** Allure参数 */
             allure?: unknown;
-            /** 用例步骤 */
-            step?: unknown;
             /** 参数化参数 */
             parametrize?: unknown;
             /** 断言参数 */
             validate?: unknown;
         };
         CaseUIRequest: {
-            caseuiinfo: components["schemas"]["CaseUIInfoRequest"][];
+            /** UI测试用例名称 */
+            name: string;
             /** 项目id */
             project: number;
+            /** Ui测试用例id */
+            caseuiinfo: number[];
         };
         Config: {
             readonly id: number;
@@ -601,35 +763,36 @@ export interface components {
         };
         Department: {
             readonly id: number;
+            readonly leader: components["schemas"]["UserProfile"];
             /** 部门名称 */
             name: string;
             /** 部门描述 */
             description?: string;
-            /** 部门领导 */
-            leader?: number | null;
         };
         DepartmentRequest: {
             /** 部门名称 */
             name: string;
             /** 部门描述 */
             description?: string;
-            /** 部门领导 */
-            leader?: number | null;
         };
         Element: {
             readonly id: number;
             /** 元素名称 */
             name: string;
-            /** 定位 */
-            locator: unknown;
+            /** 定位方式 */
+            by: string;
+            /** 定位路径 */
+            locator: string;
             /** 项目id */
             project: number;
         };
         ElementRequest: {
             /** 元素名称 */
             name: string;
-            /** 定位 */
-            locator: unknown;
+            /** 定位方式 */
+            by: string;
+            /** 定位路径 */
+            locator: string;
             /** 项目id */
             project: number;
         };
@@ -670,9 +833,235 @@ export interface components {
             /** 项目id */
             project: number;
         };
+        HeadImg: {
+            readonly id: number;
+            readonly user: string;
+            /**
+             * 头像
+             * Format: uri
+             */
+            head_img: string;
+        };
+        HeadImgRequest: {
+            /**
+             * 头像
+             * Format: binary
+             */
+            head_img: string;
+        };
         LoginRequest: {
             username: string;
             password: string;
+        };
+        PaginatedAllProfileList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["AllProfile"][];
+        };
+        PaginatedCaseAPIInfoList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["CaseAPIInfo"][];
+        };
+        PaginatedCaseAPIList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["CaseAPI"][];
+        };
+        PaginatedCaseUIInfoList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["CaseUIInfo"][];
+        };
+        PaginatedCaseUIList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["CaseUI"][];
+        };
+        PaginatedConfigList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Config"][];
+        };
+        PaginatedDepartmentList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Department"][];
+        };
+        PaginatedElementList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Element"][];
+        };
+        PaginatedEndpointList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Endpoint"][];
+        };
+        PaginatedPositionList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Position"][];
+        };
+        PaginatedProjectList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Project"][];
+        };
+        PaginatedProjectUserList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["ProjectUser"][];
+        };
+        PaginatedRoleList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Role"][];
+        };
+        PaginatedSuiteList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Suite"][];
         };
         PatchedCaseAPIInfoRequest: {
             endpoint?: components["schemas"]["EndpointRequest"];
@@ -692,10 +1081,29 @@ export interface components {
             /** 项目id */
             project?: number;
         };
+        PatchedCaseUIInfoRequest: {
+            step?: components["schemas"]["StepRequest"][];
+            /**
+             * 测试步骤执行顺序
+             * Format: int64
+             */
+            order?: number;
+            /** Ui测试步骤名称 */
+            name?: string;
+            /** Allure参数 */
+            allure?: unknown;
+            /** 参数化参数 */
+            parametrize?: unknown;
+            /** 断言参数 */
+            validate?: unknown;
+        };
         PatchedCaseUIRequest: {
-            caseuiinfo?: components["schemas"]["CaseUIInfoRequest"][];
+            /** UI测试用例名称 */
+            name?: string;
             /** 项目id */
             project?: number;
+            /** Ui测试用例id */
+            caseuiinfo?: number[];
         };
         PatchedConfigRequest: {
             /** Pytest项目配置文件 */
@@ -708,14 +1116,14 @@ export interface components {
             name?: string;
             /** 部门描述 */
             description?: string;
-            /** 部门领导 */
-            leader?: number | null;
         };
         PatchedElementRequest: {
             /** 元素名称 */
             name?: string;
-            /** 定位 */
-            locator?: unknown;
+            /** 定位方式 */
+            by?: string;
+            /** 定位路径 */
+            locator?: string;
             /** 项目id */
             project?: number;
         };
@@ -803,19 +1211,13 @@ export interface components {
             readonly role_list: components["schemas"]["UserRole"][];
             /** 昵称 */
             name: string;
-            /**
-             * 头像
-             * Format: uri
-             */
+            /** 头像 */
             head_img: string;
         };
         ProfileRequest: {
             /** 昵称 */
             name: string;
-            /**
-             * 头像
-             * Format: binary
-             */
+            /** 头像 */
             head_img: string;
         };
         Project: {
@@ -843,12 +1245,24 @@ export interface components {
             /** 项目成员 */
             user_list?: number[];
         };
+        ProjectUser: {
+            readonly id: number;
+            project_leader: components["schemas"]["UserProfile"];
+            user_list: components["schemas"]["UserProfile"][];
+            /** 项目名称 */
+            name: string;
+            /** 项目简介 */
+            description?: string;
+            /** 项目网址 */
+            base_url?: string;
+        };
         ResetRequest: {
             new_password: string;
             confirm_password: string;
         };
         Role: {
             readonly id: number;
+            readonly user_detail: components["schemas"]["UserProfile"];
             readonly department_detail: components["schemas"]["Department"];
             readonly position_detail: components["schemas"]["Position"];
         };
@@ -902,6 +1316,35 @@ export interface components {
          * @enum {integer}
          */
         StatusEnum: 0 | 1 | 2 | 3 | 4 | -1;
+        Step: {
+            readonly id: number;
+            element: components["schemas"]["Element"][];
+            /**
+             * 页面操作执行顺序
+             * Format: int64
+             */
+            order: number;
+            /** 页面操作名称 */
+            action: string;
+            /** 页面操作关键字 */
+            keyword: string;
+            /** 函数参数 */
+            args?: unknown;
+        };
+        StepRequest: {
+            element: components["schemas"]["ElementRequest"][];
+            /**
+             * 页面操作执行顺序
+             * Format: int64
+             */
+            order: number;
+            /** 页面操作名称 */
+            action: string;
+            /** 页面操作关键字 */
+            keyword: string;
+            /** 函数参数 */
+            args?: unknown;
+        };
         Suite: {
             readonly id: number;
             /** 套件名称 */
@@ -940,6 +1383,11 @@ export interface components {
             case_ui_list?: number[];
             /** 接口测试用例id */
             case_api_list?: number[];
+        };
+        UserProfile: {
+            readonly id: number;
+            readonly name: string;
+            readonly head_img: string;
         };
         UserRole: {
             department: string;
@@ -981,6 +1429,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Profile"];
+                };
+            };
+        };
+    };
+    account_profile_get_all_profile_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedAllProfileList"];
                 };
             };
         };
@@ -1053,9 +1523,37 @@ export interface operations {
             };
         };
     };
-    case_api_case_list: {
+    account_profile_upload_img_create: {
         parameters: {
             query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HeadImgRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["HeadImgRequest"];
+                "multipart/form-data": components["schemas"]["HeadImgRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HeadImg"];
+                };
+            };
+        };
+    };
+    case_api_case_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1067,7 +1565,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CaseAPI"][];
+                    "application/json": components["schemas"]["PaginatedCaseAPIList"];
                 };
             };
         };
@@ -1198,7 +1696,10 @@ export interface operations {
     };
     case_api_case_api_info_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1210,7 +1711,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CaseAPIInfo"][];
+                    "application/json": components["schemas"]["PaginatedCaseAPIInfoList"];
                 };
             };
         };
@@ -1341,7 +1842,10 @@ export interface operations {
     };
     case_api_endpoint_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1353,7 +1857,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Endpoint"][];
+                    "application/json": components["schemas"]["PaginatedEndpointList"];
                 };
             };
         };
@@ -1484,7 +1988,10 @@ export interface operations {
     };
     case_ui_case_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1496,7 +2003,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CaseUI"][];
+                    "application/json": components["schemas"]["PaginatedCaseUIList"];
                 };
             };
         };
@@ -1625,9 +2132,12 @@ export interface operations {
             };
         };
     };
-    case_ui_element_list: {
+    case_ui_case_get_single_case_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1639,7 +2149,197 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Element"][];
+                    "application/json": components["schemas"]["PaginatedCaseUIList"];
+                };
+            };
+        };
+    };
+    case_ui_case_ui_info_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCaseUIInfoList"];
+                };
+            };
+        };
+    };
+    case_ui_case_ui_info_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseUIInfoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CaseUIInfoRequest"];
+                "multipart/form-data": components["schemas"]["CaseUIInfoRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseUIInfo"];
+                };
+            };
+        };
+    };
+    case_ui_case_ui_info_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this case ui info. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseUIInfo"];
+                };
+            };
+        };
+    };
+    case_ui_case_ui_info_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this case ui info. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseUIInfoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CaseUIInfoRequest"];
+                "multipart/form-data": components["schemas"]["CaseUIInfoRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseUIInfo"];
+                };
+            };
+        };
+    };
+    case_ui_case_ui_info_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this case ui info. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    case_ui_case_ui_info_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this case ui info. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedCaseUIInfoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCaseUIInfoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCaseUIInfoRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseUIInfo"];
+                };
+            };
+        };
+    };
+    case_ui_case_ui_info_get_single_caseuiinfo_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedCaseUIInfoList"];
+                };
+            };
+        };
+    };
+    case_ui_element_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedElementList"];
                 };
             };
         };
@@ -1768,9 +2468,12 @@ export interface operations {
             };
         };
     };
-    project_config_list: {
+    case_ui_element_get_element_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1782,7 +2485,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Config"][];
+                    "application/json": components["schemas"]["PaginatedElementList"];
+                };
+            };
+        };
+    };
+    project_config_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedConfigList"];
                 };
             };
         };
@@ -1913,7 +2638,10 @@ export interface operations {
     };
     project_project_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1925,7 +2653,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Project"][];
+                    "application/json": components["schemas"]["PaginatedProjectList"];
                 };
             };
         };
@@ -2054,6 +2782,50 @@ export interface operations {
             };
         };
     };
+    project_project_get_all_project_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedProjectUserList"];
+                };
+            };
+        };
+    };
+    project_project_get_single_user_project_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedProjectList"];
+                };
+            };
+        };
+    };
     "schema_openapi.json_retrieve": {
         parameters: {
             query?: {
@@ -2131,7 +2903,10 @@ export interface operations {
     };
     suite_suite_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2143,7 +2918,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Suite"][];
+                    "application/json": components["schemas"]["PaginatedSuiteList"];
                 };
             };
         };
@@ -2352,7 +3127,10 @@ export interface operations {
     };
     system_department_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2364,7 +3142,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Department"][];
+                    "application/json": components["schemas"]["PaginatedDepartmentList"];
                 };
             };
         };
@@ -2495,7 +3273,10 @@ export interface operations {
     };
     system_position_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2507,7 +3288,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Position"][];
+                    "application/json": components["schemas"]["PaginatedPositionList"];
                 };
             };
         };
@@ -2638,7 +3419,10 @@ export interface operations {
     };
     system_role_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -2650,7 +3434,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Role"][];
+                    "application/json": components["schemas"]["PaginatedRoleList"];
                 };
             };
         };

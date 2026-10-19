@@ -17,11 +17,16 @@
             <n-form-item label="元素名称" path="name">
               <n-input v-model:value="formValue.name" placeholder="请输入元素名称" />
             </n-form-item>
-            <n-form-item label="定位方式" path="locator.by">
-              <n-input v-model:value="formValue.locator.by" placeholder="例如 xpath / css / id" />
+            <n-form-item label="定位方式" path="by">
+              <n-select
+                v-model:value="formValue.by"
+                :options="locatorByOptions"
+                placeholder="请选择定位方式"
+                clearable
+              />
             </n-form-item>
-            <n-form-item label="定位值" path="locator.value">
-              <n-input v-model:value="formValue.locator.value" placeholder="请输入定位值" />
+            <n-form-item label="定位值" path="locator">
+              <n-input v-model:value="formValue.locator" placeholder="请输入定位值" />
             </n-form-item>
             <n-form-item label="所属项目">
               <n-input :value="`${projectName}（ID：${projectId}）`" disabled />
@@ -63,16 +68,26 @@
 
   const formValue = reactive({
     name: '',
-    locator: {
-      by: '',
-      value: '',
-    },
+    by: 'xpath',
+    locator: '',
   });
+
+  // Selenium By 支持的 8 种标准定位方式（value 与后端 selenium.webdriver.common.by.By 常量一致）
+  const locatorByOptions = [
+    { label: 'id（元素 ID）', value: 'id' },
+    { label: 'name（name 属性）', value: 'name' },
+    { label: 'class name（类名）', value: 'class name' },
+    { label: 'tag name（标签名）', value: 'tag name' },
+    { label: 'link text（链接文本）', value: 'link text' },
+    { label: 'partial link text（部分链接文本）', value: 'partial link text' },
+    { label: 'xpath', value: 'xpath' },
+    { label: 'css selector（CSS 选择器）', value: 'css selector' },
+  ];
 
   const rules: FormRules = {
     name: [{ required: true, message: '请输入元素名称', trigger: 'blur' }],
-    'locator.by': [{ required: true, message: '请输入定位方式', trigger: 'blur' }],
-    'locator.value': [{ required: true, message: '请输入定位值', trigger: 'blur' }],
+    by: [{ required: true, message: '请选择定位方式', trigger: 'change' }],
+    locator: [{ required: true, message: '请输入定位值', trigger: 'blur' }],
   };
 
   // 加载项目名称（仅用于展示所属项目）
@@ -96,8 +111,8 @@
   async function loadElementDetail(id: number) {
     const res: any = await elementAPI.getDataByID(id);
     formValue.name = res.name;
-    formValue.locator.by = res.locator?.by || '';
-    formValue.locator.value = res.locator?.value || '';
+    formValue.by = res.by || 'xpath';
+    formValue.locator = res.locator || '';
   }
 
   // 提交表单：新增走 createData，编辑走 updateDataByID
@@ -125,8 +140,8 @@
       loadElementDetail(Number(route.params.id));
     } else {
       formValue.name = '';
-      formValue.locator.by = '';
-      formValue.locator.value = '';
+      formValue.by = 'xpath';
+      formValue.locator = '';
     }
     message.success('已重置');
   }

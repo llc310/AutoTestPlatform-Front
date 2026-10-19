@@ -3,10 +3,10 @@ import { BasicColumn } from '@/components/Table';
 export interface ElementData {
   id: number;
   name: string;
-  locator: {
-    by: string;
-    value: string;
-  };
+  /** 定位方式，如 xpath / css / id */
+  by: string;
+  /** 定位值 */
+  locator: string;
   project: number;
 }
 
@@ -22,10 +22,12 @@ export const columns: BasicColumn<ElementData>[] = [
   },
   {
     title: '定位方式',
-    key: 'locator.by',
+    key: 'by',
+    render: (row) => row.by || '-',
   },
   {
     title: '定位值',
-    key: 'locator.value',
+    key: 'locator',
+    render: (row) => row.locator || '-',
   },
 ];
