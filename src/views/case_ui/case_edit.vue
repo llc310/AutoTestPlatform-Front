@@ -283,6 +283,7 @@
         allure: formValue.allure,
         parametrize: formValue.parametrize,
         validate: formValue.validate,
+        project: projectId,
       };
       await http.request({
         url: `/case_ui/case_ui_info/${caseId}/`,

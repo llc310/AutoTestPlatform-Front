@@ -244,54 +244,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/case_ui/case_ui_info/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_case_ui_info_list"];
-        put?: never;
-        post: operations["case_ui_case_ui_info_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/case_ui/case_ui_info/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_case_ui_info_retrieve"];
-        put: operations["case_ui_case_ui_info_update"];
-        post?: never;
-        delete: operations["case_ui_case_ui_info_destroy"];
-        options?: never;
-        head?: never;
-        patch: operations["case_ui_case_ui_info_partial_update"];
-        trace?: never;
-    };
-    "/api/case_ui/case_ui_info/get_single_caseuiinfo/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_case_ui_info_get_single_caseuiinfo_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/case_ui/element/": {
         parameters: {
             query?: never;
@@ -699,54 +651,32 @@ export interface components {
         };
         CaseUI: {
             readonly id: number;
-            readonly step_count: string;
             /** UI测试用例名称 */
             name: string;
+            /** Allure参数 */
+            allure?: unknown;
+            /** 参数化参数 */
+            parametrize?: unknown;
+            /** 断言参数 */
+            validate?: unknown;
+            /** 用例执行顺序 */
+            step?: unknown;
             /** 项目id */
             project: number;
-            /** Ui测试用例id */
-            caseuiinfo: number[];
-        };
-        CaseUIInfo: {
-            readonly id: number;
-            step: components["schemas"]["Step"][];
-            /**
-             * 测试步骤执行顺序
-             * Format: int64
-             */
-            order: number;
-            /** Ui测试步骤名称 */
-            name: string;
-            /** Allure参数 */
-            allure?: unknown;
-            /** 参数化参数 */
-            parametrize?: unknown;
-            /** 断言参数 */
-            validate?: unknown;
-        };
-        CaseUIInfoRequest: {
-            step: components["schemas"]["StepRequest"][];
-            /**
-             * 测试步骤执行顺序
-             * Format: int64
-             */
-            order: number;
-            /** Ui测试步骤名称 */
-            name: string;
-            /** Allure参数 */
-            allure?: unknown;
-            /** 参数化参数 */
-            parametrize?: unknown;
-            /** 断言参数 */
-            validate?: unknown;
         };
         CaseUIRequest: {
             /** UI测试用例名称 */
             name: string;
+            /** Allure参数 */
+            allure?: unknown;
+            /** 参数化参数 */
+            parametrize?: unknown;
+            /** 断言参数 */
+            validate?: unknown;
+            /** 用例执行顺序 */
+            step?: unknown;
             /** 项目id */
             project: number;
-            /** Ui测试用例id */
-            caseuiinfo: number[];
         };
         Config: {
             readonly id: number;
@@ -897,21 +827,6 @@ export interface components {
              */
             previous?: string | null;
             results: components["schemas"]["CaseAPI"][];
-        };
-        PaginatedCaseUIInfoList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["CaseUIInfo"][];
         };
         PaginatedCaseUIList: {
             /** @example 123 */
@@ -1081,14 +996,8 @@ export interface components {
             /** 项目id */
             project?: number;
         };
-        PatchedCaseUIInfoRequest: {
-            step?: components["schemas"]["StepRequest"][];
-            /**
-             * 测试步骤执行顺序
-             * Format: int64
-             */
-            order?: number;
-            /** Ui测试步骤名称 */
+        PatchedCaseUIRequest: {
+            /** UI测试用例名称 */
             name?: string;
             /** Allure参数 */
             allure?: unknown;
@@ -1096,14 +1005,10 @@ export interface components {
             parametrize?: unknown;
             /** 断言参数 */
             validate?: unknown;
-        };
-        PatchedCaseUIRequest: {
-            /** UI测试用例名称 */
-            name?: string;
+            /** 用例执行顺序 */
+            step?: unknown;
             /** 项目id */
             project?: number;
-            /** Ui测试用例id */
-            caseuiinfo?: number[];
         };
         PatchedConfigRequest: {
             /** Pytest项目配置文件 */
@@ -1316,35 +1221,6 @@ export interface components {
          * @enum {integer}
          */
         StatusEnum: 0 | 1 | 2 | 3 | 4 | -1;
-        Step: {
-            readonly id: number;
-            element: components["schemas"]["Element"][];
-            /**
-             * 页面操作执行顺序
-             * Format: int64
-             */
-            order: number;
-            /** 页面操作名称 */
-            action: string;
-            /** 页面操作关键字 */
-            keyword: string;
-            /** 函数参数 */
-            args?: unknown;
-        };
-        StepRequest: {
-            element: components["schemas"]["ElementRequest"][];
-            /**
-             * 页面操作执行顺序
-             * Format: int64
-             */
-            order: number;
-            /** 页面操作名称 */
-            action: string;
-            /** 页面操作关键字 */
-            keyword: string;
-            /** 函数参数 */
-            args?: unknown;
-        };
         Suite: {
             readonly id: number;
             /** 套件名称 */
@@ -2150,174 +2026,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedCaseUIList"];
-                };
-            };
-        };
-    };
-    case_ui_case_ui_info_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedCaseUIInfoList"];
-                };
-            };
-        };
-    };
-    case_ui_case_ui_info_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CaseUIInfoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["CaseUIInfoRequest"];
-                "multipart/form-data": components["schemas"]["CaseUIInfoRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CaseUIInfo"];
-                };
-            };
-        };
-    };
-    case_ui_case_ui_info_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this case ui info. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CaseUIInfo"];
-                };
-            };
-        };
-    };
-    case_ui_case_ui_info_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this case ui info. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CaseUIInfoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["CaseUIInfoRequest"];
-                "multipart/form-data": components["schemas"]["CaseUIInfoRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CaseUIInfo"];
-                };
-            };
-        };
-    };
-    case_ui_case_ui_info_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this case ui info. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    case_ui_case_ui_info_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this case ui info. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedCaseUIInfoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCaseUIInfoRequest"];
-                "multipart/form-data": components["schemas"]["PatchedCaseUIInfoRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CaseUIInfo"];
-                };
-            };
-        };
-    };
-    case_ui_case_ui_info_get_single_caseuiinfo_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedCaseUIInfoList"];
                 };
             };
         };

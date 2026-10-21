@@ -73,6 +73,8 @@ export interface CaseUIInfo {
   parametrize?: unknown;
   /** 断言参数 */
   validate?: unknown;
+  /** 项目id */
+  project?: number;
 }
 
 export interface CaseUIInfoRequest {
@@ -88,6 +90,8 @@ export interface CaseUIInfoRequest {
   parametrize?: unknown;
   /** 断言参数 */
   validate?: unknown;
+  /** 项目id */
+  project?: number;
 }
 
 // UI 用例（列表行），对应后端 CaseUI
