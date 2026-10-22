@@ -44,6 +44,42 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/case_ui/element_edit.vue'),
       },
       {
+        path: 'keyword',
+        name: 'case_ui-keyword',
+        meta: {
+          title: '关键字管理',
+        },
+        component: () => import('@/views/case_ui/keyword.vue'),
+      },
+      {
+        path: 'keyword_edit/:id?',
+        name: 'case_ui-keyword_edit',
+        meta: {
+          title: '修改关键字信息',
+          singleTab: true,
+          hidden: true,
+        },
+        component: () => import('@/views/case_ui/keyword_edit.vue'),
+      },
+      {
+        path: 'action',
+        name: 'case_ui-action',
+        meta: {
+          title: '测试步骤管理',
+        },
+        component: () => import('@/views/case_ui/action.vue'),
+      },
+      {
+        path: 'action_list/:id?',
+        name: 'case_ui-action_list',
+        meta: {
+          title: '项目测试步骤列表',
+          singleTab: true,
+          hidden: true,
+        },
+        component: () => import('@/views/case_ui/actionList.vue'),
+      },
+      {
         path: 'case_list/:id?',
         name: 'case_ui-case_list',
         meta: {

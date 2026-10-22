@@ -78,7 +78,9 @@ export function useDataSource(
       const total = res[itemCount];
 
       // 如果数据异常，需获取正确的页码再次执行
-      if (resultTotal) {
+      // 注意：后端空表时 pageCount=1 但 itemCount=0，此时 page=1 是合法的空页，
+      // 必须排除 total=0，否则会把有效空页误判为越界，用 page=0 重发请求导致后端 404
+      if (resultTotal && total > 0) {
         const currentTotalPage = Math.ceil(total / pageSize);
         if (page > currentTotalPage) {
           setPagination({

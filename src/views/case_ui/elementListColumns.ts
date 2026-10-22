@@ -6,8 +6,8 @@ export interface ElementData {
   /** 定位方式，如 xpath / css / id */
   by: string;
   /** 定位值 */
-  locator: string;
-  project: number;
+  path: string;
+  project_id: number;
 }
 
 export const columns: BasicColumn<ElementData>[] = [
@@ -27,7 +27,7 @@ export const columns: BasicColumn<ElementData>[] = [
   },
   {
     title: '定位值',
-    key: 'locator',
-    render: (row) => row.locator || '-',
+    key: 'path',
+    render: (row) => row.path || '-',
   },
 ];

@@ -25,8 +25,8 @@
                 clearable
               />
             </n-form-item>
-            <n-form-item label="定位值" path="locator">
-              <n-input v-model:value="formValue.locator" placeholder="请输入定位值" />
+            <n-form-item label="定位值" path="path">
+              <n-input v-model:value="formValue.path" placeholder="请输入定位值" />
             </n-form-item>
             <n-form-item label="所属项目">
               <n-input :value="`${projectName}（ID：${projectId}）`" disabled />
@@ -69,7 +69,7 @@
   const formValue = reactive({
     name: '',
     by: 'xpath',
-    locator: '',
+    path: '',
   });
 
   // Selenium By 支持的 8 种标准定位方式（value 与后端 selenium.webdriver.common.by.By 常量一致）
@@ -87,7 +87,7 @@
   const rules: FormRules = {
     name: [{ required: true, message: '请输入元素名称', trigger: 'blur' }],
     by: [{ required: true, message: '请选择定位方式', trigger: 'change' }],
-    locator: [{ required: true, message: '请输入定位值', trigger: 'blur' }],
+    path: [{ required: true, message: '请输入定位值', trigger: 'blur' }],
   };
 
   // 加载项目名称（仅用于展示所属项目）
@@ -112,14 +112,14 @@
     const res: any = await elementAPI.getDataByID(id);
     formValue.name = res.name;
     formValue.by = res.by || 'xpath';
-    formValue.locator = res.locator || '';
+    formValue.path = res.path || '';
   }
 
   // 提交表单：新增走 createData，编辑走 updateDataByID
   async function formSubmit() {
     try {
       await formRef.value.validate();
-      const payload = { ...formValue, project: projectId };
+      const payload = { ...formValue, project_id: projectId };
       if (isEdit.value) {
         await elementAPI.updateDataByID(Number(route.params.id), payload as any);
         message.success('修改成功');
@@ -141,7 +141,7 @@
     } else {
       formValue.name = '';
       formValue.by = 'xpath';
-      formValue.locator = '';
+      formValue.path = '';
     }
     message.success('已重置');
   }

@@ -5,104 +5,82 @@
     </div>
     <n-card :bordered="false" class="mt-4 proCard" style="margin-top: -40px">
       <n-grid cols="1 s:1 m:3 l:3 xl:3 2xl:3" responsive="screen">
-        <n-grid-item offset="0 s:0 m:1 l:1 xl:1 2xl:1">
+        <n-grid-item offset="0 s:0" span="1 m:2 l:2 xl:2 2xl:2">
           <n-form
             :label-width="100"
             :model="formValue"
             :rules="rules"
             label-placement="left"
+            require-mark-placement="right-hanging"
             ref="formRef"
             class="py-8"
           >
-            <n-form-item label="用例名称" path="name">
-              <n-input v-model:value="formValue.name" placeholder="请输入用例名称" />
-            </n-form-item>
-            <n-form-item label="执行顺序" path="order">
-              <n-input-number v-model:value="formValue.order" :min="1" style="width: 100%" />
-            </n-form-item>
-            <n-form-item label="所属项目">
-              <n-input :value="`${projectName}（ID：${projectId}）`" disabled />
-            </n-form-item>
+            <n-grid :cols="2" :x-gap="16">
+              <n-form-item-gi label="用例名称" path="name">
+                <n-input
+                  v-model:value="formValue.name"
+                  maxlength="64"
+                  show-count
+                  placeholder="请输入用例名称（最长 64 字）"
+                />
+              </n-form-item-gi>
+              <n-form-item-gi label="所属项目">
+                <n-input :value="`${projectName}（ID：${projectId}）`" disabled />
+              </n-form-item-gi>
+            </n-grid>
 
-            <n-divider title-placement="left">测试步骤</n-divider>
+            <n-divider title-placement="left">测试步骤（{{ steps.length }}）</n-divider>
 
-            <div v-for="(step, index) in formValue.step" :key="step.id" class="step-card">
+            <div v-if="steps.length === 0" class="empty-tip">暂无测试步骤</div>
+            <div v-for="(action, index) in steps" :key="action.id" class="step-card">
               <n-card size="small" :bordered="true">
-                <n-space vertical :size="12">
+                <n-space vertical :size="8">
                   <n-space align="center" :size="8">
-                    <span style="font-weight: 500; color: #18a058">步骤 {{ index + 1 }}</span>
-                    <span>顺序</span>
-                    <n-input-number
-                      v-model:value="step.order"
-                      :min="1"
-                      size="small"
-                      style="width: 90px"
-                    />
+                    <span class="step-index">测试步骤 {{ index + 1 }}</span>
+                    <span>执行顺序：{{ action.sort }}</span>
                   </n-space>
-                  <n-space vertical :size="6">
-                    <n-space align="center" :size="8">
-                      <span class="step-label">Allure 参数</span>
-                      <div style="flex: 1">
-                        <div
-                          v-for="(v, k) in allureFields(formValue.allure)"
-                          :key="k"
-                          class="step-el"
-                        >
-                          {{ k }}：{{ v }}
-                        </div>
-                        <pre v-if="!allureFields(formValue.allure)" class="step-pre">
-                          {{ formatJson(formValue.allure) }}
-                        </pre>
-                      </div>
-                    </n-space>
-                    <n-space align="center" :size="8">
-                      <span class="step-label">参数化参数</span>
-                      <pre class="step-pre">{{ parametrizeText }}</pre>
-                    </n-space>
-                    <n-space align="center" :size="8">
-                      <span class="step-label">断言参数</span>
-                      <pre class="step-pre">{{ validateText }}</pre>
-                    </n-space>
-                    <n-space align="center" :size="8">
-                      <span class="step-label">操作名称</span>
-                      <n-input
-                        v-model:value="step.action"
-                        placeholder="如：输入用户名"
-                        style="flex: 1"
-                      />
-                    </n-space>
-                    <n-space align="center" :size="8">
-                      <span class="step-label">关键字</span>
-                      <n-input
-                        v-model:value="step.keyword"
-                        placeholder="如：click / send_keys"
-                        style="flex: 1"
-                      />
-                    </n-space>
-                    <n-space align="center" :size="8">
-                      <span class="step-label">参数</span>
-                      <n-input
-                        v-model:value="step.argsText"
-                        placeholder="多个参数用英文逗号分隔"
-                        style="flex: 1"
-                      />
-                    </n-space>
-                    <n-space align="center" :size="8">
-                      <span class="step-label">关联元素</span>
-                      <div style="flex: 1">
-                        <div v-for="el in step.element" :key="el.id" class="step-el">
-                          元素 id：{{ el.id }} ｜ 名称：{{ el.name }} ｜ 定位方式：{{ el.by }} ｜
-                          定位值：{{ el.locator }} ｜ 所属项目：{{ el.project }}
-                        </div>
-                        <span v-if="!step.element || step.element.length === 0">-</span>
-                      </div>
-                    </n-space>
-                  </n-space>
+
+                  <div>
+                    <span class="step-label">Allure 参数：</span>
+                    <span v-if="allureText(action.allure_id)" class="step-value">
+                      {{ allureText(action.allure_id) }}
+                    </span>
+                    <span v-else>-</span>
+                  </div>
+                  <div>
+                    <span class="step-label">参数化参数：</span>
+                    <span v-if="action.parametrize_id" class="step-value">
+                      {{ formatInline(action.parametrize_id) }}
+                    </span>
+                    <span v-else>-</span>
+                  </div>
+                  <div>
+                    <span class="step-label">断言参数：</span>
+                    <span v-if="action.validate_id" class="step-value">
+                      {{ formatInline(action.validate_id) }}
+                    </span>
+                    <span v-else>-</span>
+                  </div>
+
+                  <div>
+                    <span class="step-label">页面操作：</span>
+                    <span v-if="!action.step_id || action.step_id.length === 0">-</span>
+                  </div>
+                  <div
+                    v-for="(s, i) in action.step_id"
+                    :key="s.id"
+                    class="step-sub"
+                  >
+                    操作 {{ i + 1 }}：{{ s.action }}
+                    ｜ 参数：{{ formatJson(s.params) }}
+                    ｜ 关键字ID：{{ s.keyword_id ?? '-' }}
+                    ｜ 元素ID：{{ s.element_id ?? '-' }}
+                  </div>
                 </n-space>
               </n-card>
             </div>
 
-            <div style="margin-left: 100px">
+            <div style="margin-left: 100px; margin-top: 16px">
               <n-space>
                 <n-button type="primary" @click="formSubmit">提交</n-button>
                 <n-button @click="resetForm">重置</n-button>
@@ -117,21 +95,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, computed, onMounted } from 'vue';
+  import { ref, reactive, onMounted } from 'vue';
   import { useMessage } from 'naive-ui';
   import { useRoute, useRouter } from 'vue-router';
   import type { FormRules } from 'naive-ui';
   import { http } from '@/utils/http/axios';
-  import type { Element as UIElement } from '@/api/case_ui/models';
-
-  interface StepEditItem {
-    id: number;
-    element: UIElement[];
-    order: number;
-    action: string;
-    keyword: string;
-    argsText: string;
-  }
+  import type { ActionSchema } from '@/api/case_ui/models';
 
   const route = useRoute();
   const router = useRouter();
@@ -146,48 +115,43 @@
 
   const formValue = reactive({
     name: '',
-    order: 1,
-    step: [] as StepEditItem[],
-    allure: null as unknown,
-    parametrize: null as unknown,
-    validate: null as unknown,
   });
 
-  const parametrizeText = computed(() => formatJson(formValue.parametrize));
-  const validateText = computed(() => formatJson(formValue.validate));
+  // 测试步骤列表（action 实例，只读展示）
+  const steps = ref<ActionSchema[]>([]);
 
   const rules: FormRules = {
     name: [{ required: true, message: '请输入用例名称', trigger: 'blur' }],
-    order: [{ required: true, message: '请输入执行顺序', trigger: 'change' }],
   };
 
-  function formatJson(value: unknown): string {
-    if (value === undefined) return '';
-    try {
-      return JSON.stringify(value, null, 2) ?? '';
-    } catch {
-      return String(value);
-    }
+  // JSON 字段展示：对象/数组转字符串
+  function formatJson(v: unknown): string {
+    if (v === null || v === undefined || v === '') return '-';
+    return typeof v === 'object' ? JSON.stringify(v) : String(v);
   }
 
-  // allure 字段级展开（feature/story/title/description），非标准结构时返回 null 走 JSON 兜底
-  function allureFields(value: any): Record<string, unknown> | null {
-    if (value && typeof value === 'object') {
-      const obj: Record<string, unknown> = {};
-      for (const key of ['feature', 'story', 'title', 'description']) {
-        if (value[key] !== undefined && value[key] !== null) {
-          obj[key] = value[key];
-        }
+  // 对象内联展示（参数化 / 断言）：字段用 ｜ 分隔
+  function formatInline(v: any): string {
+    if (v === null || v === undefined) return '-';
+    if (Array.isArray(v)) return v.map((item: any) => formatInline(item)).join('、');
+    if (typeof v === 'object') {
+      return Object.entries(v)
+        .map(([k, val]) => `${k}：${formatInline(val)}`)
+        .join(' ｜ ');
+    }
+    return String(v);
+  }
+
+  // allure 字段级展示（feature/story/title/description）
+  function allureText(value: any): string {
+    if (!value || typeof value !== 'object') return '';
+    const parts: string[] = [];
+    for (const key of ['feature', 'story', 'title', 'description']) {
+      if (value[key] !== undefined && value[key] !== null && value[key] !== '') {
+        parts.push(`${key}：${value[key]}`);
       }
-      return Object.keys(obj).length > 0 ? obj : null;
     }
-    return null;
-  }
-
-  function formatArgs(args: unknown): string {
-    if (Array.isArray(args)) return args.join(', ');
-    if (args === null || args === undefined) return '';
-    return String(args);
+    return parts.join(' ｜ ');
   }
 
   // 加载项目名称（仅用于展示所属项目）
@@ -207,7 +171,7 @@
     }
   }
 
-  // 加载用例详情（含步骤与元素）
+  // 加载用例详情：GET /case_ui/case/{id}/
   async function loadCaseDetail() {
     if (!caseId) {
       message.error('缺少用例 id');
@@ -215,82 +179,21 @@
     }
     try {
       const res: any = await http.request({
-        url: '/case_ui/case_ui_info/get_single_caseuiinfo/',
+        url: `/case_ui/case/${caseId}/`,
         method: 'get',
-        params: { caseui_id: caseId },
       });
-      // 兼容多种返回结构：分页 list / DRF results / 直接返回单对象
-      let target: any = null;
-      if (Array.isArray(res)) {
-        target = res.find((item: any) => item.id === caseId);
-      } else if (res?.list && Array.isArray(res.list)) {
-        target = res.list.find((item: any) => item.id === caseId);
-      } else if (res?.results && Array.isArray(res.results)) {
-        target = res.results.find((item: any) => item.id === caseId);
-      } else if (res && typeof res === 'object' && res.id === caseId) {
-        target = res;
-      }
-      if (!target) {
-        message.error('未找到该用例');
-        return;
-      }
-      formValue.name = target.name ?? '';
-      formValue.order = target.order ?? 1;
-      formValue.allure = target.allure ?? null;
-      formValue.parametrize = target.parametrize ?? null;
-      formValue.validate = target.validate ?? null;
-      formValue.step = (target.step || []).map((s: any, index: number) => ({
-        id: s.id,
-        element: s.element || [],
-        order: s.order ?? index + 1,
-        action: s.action ?? '',
-        keyword: s.keyword ?? '',
-        argsText: formatArgs(s.args),
-      }));
+      formValue.name = res.name ?? '';
+      steps.value = Array.isArray(res.action_id) ? res.action_id : [];
     } catch (e) {
       console.error('加载用例详情失败:', e);
       message.error('加载用例详情失败');
     }
   }
 
-  // 提交：更新用例内容（步骤等）+ 同步更新用例主表名称
+  // 提交：仅更新用例名称（PATCH /case_ui/case/{id}/，测试步骤由后端只读关联）
   async function formSubmit() {
     try {
       await formRef.value.validate();
-      const stepPayload = formValue.step.map((s) => ({
-        id: s.id,
-        element: s.element.map((e) => ({
-          id: e.id,
-          name: e.name,
-          by: e.by,
-          locator: e.locator,
-          project: e.project,
-        })),
-        order: s.order,
-        action: s.action,
-        keyword: s.keyword,
-        args: s.argsText
-          ? s.argsText
-              .split(',')
-              .map((x) => x.trim())
-              .filter(Boolean)
-          : [],
-      }));
-      const payload = {
-        name: formValue.name,
-        order: formValue.order,
-        step: stepPayload,
-        allure: formValue.allure,
-        parametrize: formValue.parametrize,
-        validate: formValue.validate,
-        project: projectId,
-      };
-      await http.request({
-        url: `/case_ui/case_ui_info/${caseId}/`,
-        method: 'put',
-        data: payload,
-      });
-      // 同步更新用例主表名称（仅部分字段，避免覆盖 caseuiinfo 关联）
       await http.request({
         url: `/case_ui/case/${caseId}/`,
         method: 'patch',
@@ -325,25 +228,24 @@
   .step-card {
     margin-bottom: 12px;
   }
+  .step-index {
+    font-weight: 500;
+    color: #18a058;
+  }
   .step-label {
-    width: 70px;
-    color: #666;
-    flex-shrink: 0;
-  }
-  .step-pre {
-    margin: 0;
-    flex: 1;
-    white-space: pre-wrap;
-    word-break: break-all;
-    font-size: 12px;
     color: #666;
   }
-  .step-el {
+  .step-value {
+    color: #333;
+  }
+  .step-sub {
+    margin-left: 24px;
     font-size: 13px;
     color: #666;
     line-height: 1.6;
   }
-  .mr-1 {
-    margin-right: 6px;
+  .empty-tip {
+    color: #999;
+    padding: 12px 0;
   }
 </style>

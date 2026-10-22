@@ -2,7 +2,7 @@ import { components } from '../schema';
 
 /**
  * UI 测试模型定义
- * 对应后端接口：/api/case_ui/element/、/api/case_ui/case/、/api/case_ui/caseuiinfo/
+ * 对应后端接口：/api/case_ui/element/、/api/case_ui/keyword/、/api/case_ui/case/、/api/case_ui/action/
  */
 
 // 元素模型（接口返回，字段与后端 /api/case_ui/element/ 保持一致）
@@ -12,10 +12,10 @@ export interface Element {
   name: string;
   /** 定位方式，如 xpath / css / id */
   by: string;
-  /** 定位值 */
-  locator: string;
+  /** 定位路径 */
+  path: string;
   /** 项目id */
-  project: number;
+  project_id: number;
 }
 
 // 创建 / 更新元素的请求体
@@ -24,100 +24,131 @@ export interface ElementRequest {
   name: string;
   /** 定位方式 */
   by: string;
-  /** 定位值 */
-  locator: string;
+  /** 定位路径 */
+  path: string;
   /** 项目id */
-  project: number;
+  project_id: number;
 }
 
-// 用例步骤（页面操作）
-export interface Step {
+// 关键字模型（接口返回，字段与后端 /api/case_ui/keyword/ 保持一致）
+export interface KeyWord {
   readonly id: number;
-  /** 步骤关联的元素 */
-  element: Element[];
-  /** 页面操作执行顺序 */
-  order: number;
-  /** 页面操作名称 */
-  action: string;
-  /** 页面操作关键字（click / send_keys 等） */
-  keyword: string;
-  /** 函数参数 */
-  args?: unknown;
+  /** 关键字名 */
+  keyword_name: string;
+  /** 操作描述 */
+  description: string;
 }
 
-export interface StepRequest {
-  /** 步骤关联的元素 */
-  element: ElementRequest[];
-  /** 页面操作执行顺序 */
-  order: number;
-  /** 页面操作名称 */
-  action: string;
-  /** 页面操作关键字（click / send_keys 等） */
-  keyword: string;
-  /** 函数参数 */
-  args?: unknown;
+// 创建 / 更新关键字的请求体
+export interface KeyWordRequest {
+  /** 关键字名 */
+  keyword_name: string;
+  /** 操作描述 */
+  description: string;
 }
 
-// UI 用例信息（含步骤），对应后端 CaseUIInfo
-export interface CaseUIInfo {
-  readonly id: number;
-  /** 用例步骤 */
-  step: Step[];
-  /** 测试步骤执行顺序 */
-  order: number;
-  /** Ui测试用例名称 */
-  name: string;
-  /** Allure参数 */
-  allure?: unknown;
-  /** 参数化参数 */
-  parametrize?: unknown;
-  /** 断言参数 */
-  validate?: unknown;
-  /** 项目id */
-  project?: number;
-}
-
-export interface CaseUIInfoRequest {
-  /** 用例步骤 */
-  step: StepRequest[];
-  /** 测试步骤执行顺序 */
-  order: number;
-  /** Ui测试用例名称 */
-  name: string;
-  /** Allure参数 */
-  allure?: unknown;
-  /** 参数化参数 */
-  parametrize?: unknown;
-  /** 断言参数 */
-  validate?: unknown;
-  /** 项目id */
-  project?: number;
-}
-
-// UI 用例（列表行），对应后端 CaseUI
+// UI 测试用例（接口返回，字段与后端 /api/case_ui/case/ 保持一致）
 export interface CaseUI {
   readonly id: number;
-  readonly step_count: string;
   /** UI测试用例名称 */
   name: string;
   /** 项目id */
-  project: number;
-  /** Ui测试用例id */
-  caseuiinfo: number[];
+  project_id: number;
+  /** 关联的测试步骤（action）列表（只读） */
+  action_id: ActionSchema[];
 }
 
-// 创建 / 更新 UI 用例的请求体
+// 创建 / 更新 UI 测试用例的请求体
 export interface CaseUIRequest {
   /** UI测试用例名称 */
   name: string;
   /** 项目id */
-  project: number;
-  /** Ui测试用例id */
-  caseuiinfo: number[];
+  project_id: number;
+}
+
+// Allure 模型（测试步骤关联的 allure 报告信息，只读）
+export interface Allure {
+  readonly id: number;
+  /** 所属模块 */
+  feature?: string;
+  /** 功能名 */
+  story?: string;
+  /** 用例标题 */
+  title?: string;
+  /** 用例描述 */
+  description?: string;
+}
+
+// 参数化模型（测试步骤关联的参数化数据，只读）
+export interface Parametrize {
+  readonly id: number;
+  /** 参数化键名 */
+  param_key: string;
+  /** 参数化键值 */
+  param_value: unknown;
+}
+
+// 断言模型（测试步骤关联的断言，只读）
+export interface Validate {
+  readonly id: number;
+  /** 断言类型 */
+  validate_type: components['schemas']['ValidateTypeEnum'];
+  /** 断言参数 */
+  validate_params: unknown;
+}
+
+// 测试步骤（Action）下的单条操作
+export interface Step {
+  readonly id: number;
+  /** 操作 */
+  action: string;
+  /** 参数值 */
+  params?: unknown;
+  /** 步骤内执行顺序 */
+  order: number;
+  /** 关键字id */
+  keyword_id?: number | null;
+  /** 页面元素id */
+  element_id?: number | null;
+  /** 测试步骤id */
+  action_id: number;
+}
+
+// 测试步骤模型（接口返回，字段与后端 /api/case_ui/action/ 保持一致）
+export interface Action {
+  readonly id: number;
+  /** 测试步骤名 */
+  name: string;
+  /** 执行顺序 */
+  sort: number;
+  /** 项目id */
+  project_id: number;
+  /** allure参数（只读） */
+  readonly allure_id: Allure;
+  /** 参数化（只读，可空） */
+  readonly parametrize_id: Parametrize | null;
+  /** 断言（只读，可空） */
+  readonly validate_id: Validate | null;
+  /** 操作步骤列表（只读） */
+  readonly step_id: Step[];
+}
+
+// 创建 / 更新测试步骤的请求体
+export interface ActionRequest {
+  /** 测试步骤名 */
+  name: string;
+  /** 执行顺序 */
+  sort: number;
+  /** 项目id */
+  project_id: number;
 }
 
 // 兼容 openapi 生成的类型
 export type ElementSchema = components['schemas']['Element'];
+export type KeyWordSchema = components['schemas']['KeyWord'];
+export type ActionSchema = components['schemas']['Action'];
 export type CaseUISchema = components['schemas']['CaseUI'];
-export type CaseUIInfoSchema = components['schemas']['CaseUIInfo'];
+export type AllureSchema = components['schemas']['Allure'];
+export type ParametrizeSchema = components['schemas']['Parametrize'];
+export type ValidateSchema = components['schemas']['Validate'];
 export type StepSchema = components['schemas']['Step'];
