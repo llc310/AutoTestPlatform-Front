@@ -4,6 +4,18 @@ import { Action, Element, KeyWord, CaseUI, Step, Allure, Parametrize, Validate }
 
 export class ElementAPI extends BaseModelAPI<Element> {
   base_url = '/case_ui/element/';
+
+  /**
+   * 获取可选元素列表（用于步骤编辑下拉）
+   * 对应后端：GET /api/case_ui/element/get_element/
+   */
+  getElement(params?: Record<string, any>) {
+    return http.request<any>({
+      url: `${this.base_url}get_element/`,
+      method: 'get',
+      params,
+    });
+  }
 }
 
 export class KeyWordAPI extends BaseModelAPI<KeyWord> {

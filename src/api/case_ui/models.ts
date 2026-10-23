@@ -105,7 +105,7 @@ export interface Step {
   /** 参数值 */
   params?: unknown;
   /** 步骤内执行顺序 */
-  order: number;
+  sort: number;
   /** 关键字id */
   keyword_id?: number | null;
   /** 页面元素id */
@@ -119,8 +119,6 @@ export interface Action {
   readonly id: number;
   /** 测试步骤名 */
   name: string;
-  /** 执行顺序 */
-  sort: number;
   /** 项目id */
   project_id: number;
   /** allure参数（只读） */
@@ -137,8 +135,6 @@ export interface Action {
 export interface ActionRequest {
   /** 测试步骤名 */
   name: string;
-  /** 执行顺序 */
-  sort: number;
   /** 项目id */
   project_id: number;
 }

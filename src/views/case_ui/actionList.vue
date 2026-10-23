@@ -28,14 +28,6 @@
         <n-form-item label="测试步骤名" path="name">
           <n-input v-model:value="editForm.name" placeholder="请输入测试步骤名" />
         </n-form-item>
-        <n-form-item label="执行顺序" path="sort">
-          <n-input-number
-            v-model:value="editForm.sort"
-            :min="0"
-            placeholder="请输入执行顺序"
-            style="width: 100%"
-          />
-        </n-form-item>
 
         <!-- Allure 参数 -->
         <n-divider title-placement="center" style="margin: 8px 0">
@@ -76,7 +68,7 @@
               "
             >
               <n-input-number
-                v-model:value="step.order"
+                v-model:value="step.sort"
                 :min="0"
                 placeholder="序号"
                 style="width: 70px"
@@ -93,6 +85,7 @@
               <n-select
                 v-model:value="step.element_id"
                 :options="elementOptions"
+                :render-label="renderElementLabel"
                 placeholder="元素"
                 clearable
                 style="width: 130px"
@@ -174,7 +167,28 @@
           </n-gi>
           <n-gi>
             <n-form-item label="validate_params" label-placement="top">
-              <n-input v-model:value="editForm.validate.validate_params" placeholder="断言参数" />
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <n-tag
+                  v-for="(p, i) in editForm.validate.paramsList"
+                  :key="i"
+                  closable
+                  size="large"
+                  @close="editForm.validate.paramsList.splice(i, 1)"
+                >
+                  {{ p }}
+                </n-tag>
+                <n-input
+                  v-if="editForm.validate.showInput"
+                  v-model:value="editForm.validate.newParam"
+                  placeholder="输入断言参数后回车"
+                  @keydown.enter="confirmValidateParam"
+                  @blur="editForm.validate.showInput = false"
+                  autofocus
+                />
+                <n-button v-else dashed @click="editForm.validate.showInput = true">
+                  + 添加参数
+                </n-button>
+              </div>
             </n-form-item>
           </n-gi>
         </n-grid>
@@ -339,18 +353,41 @@
     }
   }
 
-  const elementOptions = ref<{ label: string; value: number }[]>([]);
+  const elementOptions = ref<{ label: string; value: number; by?: string; path?: string }[]>([]);
   async function loadElements() {
     try {
-      const res: any = await elementAPI.getDataList();
+      const res: any = await elementAPI.getElement({ project_id: projectId });
       const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
       elementOptions.value = list.map((el: any) => ({
         label: el.name,
         value: el.id,
+        by: el.by || '',
+        path: el.path || '',
       }));
     } catch (e) {
       console.error('加载元素列表失败:', e);
     }
+  }
+
+  // 元素下拉选项：悬停显示 定位方式 + 定位值
+  function renderElementLabel(option: any) {
+    return h(
+      NTooltip,
+      { trigger: 'hover' },
+      {
+        trigger: () =>
+          h(
+            'div',
+            {
+              style:
+                'display:block; width:100%; min-width:180px; margin:-8px -12px; padding:8px 12px; cursor:default;',
+            },
+            option.label
+          ),
+        default: () =>
+          h('span', null, `定位方式: ${option.by || '-'}，定位值: ${option.path || '-'}`),
+      }
+    );
   }
 
   // 渲染下拉选项：鼠标悬停整行 tooltip 展示 "关键字名(描述)"
@@ -375,7 +412,6 @@
 
   const editForm = reactive({
     name: '',
-    sort: 0,
     project_id: projectId,
     steps: [] as any[],
     allure: { id: null as number | null, feature: '', story: '', title: '', description: '' },
@@ -383,7 +419,13 @@
       id: null as number | null,
       items: [] as { param_key: string; param_values: string[] }[],
     },
-    validate: { id: null as number | null, validate_type: null as string | null, validate_params: '' },
+    validate: {
+      id: null as number | null,
+      validate_type: null as string | null,
+      paramsList: [] as string[],
+      showInput: false,
+      newParam: '',
+    },
   });
 
   // 断言类型选项（对应后端 ValidateTypeEnum）
@@ -399,7 +441,6 @@
   function openEditDialog(record) {
     editingId.value = record.id ?? null;
     editForm.name = record.name ?? '';
-    editForm.sort = record.sort ?? 0;
     editForm.project_id = record.project_id ?? projectId;
     // 兜底：项目名还没加载到就拉一次
     if (!projectName.value) {
@@ -430,7 +471,15 @@
     const vd = record.validate_id || {};
     editForm.validate.id = vd.id ?? null;
     editForm.validate.validate_type = vd.validate_type ?? null;
-    editForm.validate.validate_params = vd.validate_params != null ? String(vd.validate_params) : '';
+    let vParams: string[] = [];
+    if (Array.isArray(vd.validate_params)) {
+      vParams = vd.validate_params.map((p: any) => String(p));
+    } else if (vd.validate_params != null && vd.validate_params !== '') {
+      vParams = [String(vd.validate_params)];
+    }
+    editForm.validate.paramsList = vParams;
+    editForm.validate.showInput = false;
+    editForm.validate.newParam = '';
     // 深拷贝 step_id，保留 id/keyword_id/element_id/action_id 等外键字段原样回传
     editForm.steps = Array.isArray(record.step_id)
       ? record.step_id.map((s: any, i: number) => {
@@ -448,7 +497,7 @@
             paramsList,
             showParamInput: false,
             newParam: '',
-            order: s.order ?? i + 1,
+            sort: s.sort ?? i + 1,
             keyword_id: s.keyword_id ?? null,
             element_id: s.element_id ?? null,
             action_id: s.action_id ?? record.id ?? null,
@@ -469,7 +518,7 @@
       paramsList: [],
       showParamInput: false,
       newParam: '',
-      order: editForm.steps.length + 1,
+      sort: editForm.steps.length + 1,
       keyword_id: null,
       element_id: null,
       action_id: editingId.value,
@@ -527,25 +576,34 @@
     step.showParamInput = false;
   }
 
+  // validate 参数：回车确认添加
+  function confirmValidateParam() {
+    const val = (editForm.validate.newParam || '').trim();
+    if (val) {
+      editForm.validate.paramsList.push(val);
+    }
+    editForm.validate.newParam = '';
+    editForm.validate.showInput = false;
+  }
+
   // 修改 order 后按执行顺序重排行，允许不连续但不允许重复
   function sortSteps() {
-    const orders = editForm.steps.map((s) => s.order);
-    const hasDuplicate = orders.some((o, i) => orders.indexOf(o) !== i);
+    const sorts = editForm.steps.map((s) => s.sort);
+    const hasDuplicate = sorts.some((o, i) => sorts.indexOf(o) !== i);
     if (hasDuplicate) {
       message.warning('步骤序号重复，请调整为不重复的值');
     }
-    editForm.steps.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    editForm.steps.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
   }
 
-  // 保存编辑：先 PUT action 的 sort/project_id，再 diff step 列表调独立接口
+  // 保存编辑：先 PUT action 的 name/project_id，再 diff step 列表调独立接口
   async function saveEdit() {
     if (editingId.value == null) return;
     saving.value = true;
     try {
-      // 1. 更新 action 本身（后端 ActionRequest 接受 name/sort/project_id）
+      // 1. 更新 action 本身（后端 ActionRequest 接受 name/project_id）
       await actionAPI.updateDataByID(editingId.value, {
         name: editForm.name,
-        sort: editForm.sort,
         project_id: editForm.project_id,
       } as any);
 
@@ -572,7 +630,7 @@
       if (editForm.validate.id != null) {
         await validateAPI.updateDataByID(editForm.validate.id, {
           validate_type: editForm.validate.validate_type,
-          validate_params: editForm.validate.validate_params,
+          validate_params: editForm.validate.paramsList,
         } as any);
       }
 
@@ -594,7 +652,7 @@
         const payload = {
           action: step.action,
           params: step.paramsList && step.paramsList.length ? step.paramsList : {},
-          order: step.order ?? 0,
+          sort: step.sort ?? 0,
           keyword_id: step.keyword_id,
           element_id: step.element_id,
           action_id: editingId.value,
