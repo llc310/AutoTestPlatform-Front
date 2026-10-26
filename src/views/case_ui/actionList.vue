@@ -140,8 +140,11 @@
               :key="vi"
               style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;"
             >
-              <n-input v-model:value="item.param_values[vi]" placeholder="参数化键值" style="flex: 1" />
-              <n-button size="small" type="error" ghost @click="item.param_values.splice(vi, 1)">删除</n-button>
+              <n-input v-model:value="item.param_values[vi]" placeholder="参数化键值" style="flex: 1">
+                <template v-if="item.param_values[vi]" #suffix>
+                  <n-text style="cursor: pointer; color: #d03050;" @click="item.param_values.splice(vi, 1)">×</n-text>
+                </template>
+              </n-input>
             </div>
             <n-button size="small" dashed @click="item.param_values.push('')">+ 添加值</n-button>
           </div>
@@ -155,43 +158,93 @@
         <n-divider title-placement="center" style="margin: 8px 0">
           <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
         </n-divider>
-        <n-grid :cols="2" :x-gap="12">
-          <n-gi>
-            <n-form-item label="validate_type" label-placement="top">
-              <n-select
-                v-model:value="editForm.validate.validate_type"
-                :options="validateTypeOptions"
-                placeholder="断言类型"
-              />
-            </n-form-item>
-          </n-gi>
-          <n-gi>
-            <n-form-item label="validate_params" label-placement="top">
-              <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div
+          v-for="(item, vi) in editForm.validate.items"
+          :key="vi"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+        >
+          <div style="flex: 1;">
+            <div style="margin-bottom: 6px; font-size: 14px;">validate_type</div>
+            <n-select
+              v-model:value="item.validate_type"
+              :options="validateTypeOptions"
+              placeholder="断言类型"
+            />
+          </div>
+          <div style="flex: 1;">
+            <div style="margin-bottom: 6px; font-size: 14px;">validate_params</div>
+            <div
+              v-for="(vp, vpi) in item.params"
+              :key="vpi"
+              style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
+            >
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <n-input
+                  v-model:value="vp.expect_result"
+                  placeholder="expect_result 期望值"
+                  size="small"
+                  style="flex: 1"
+                >
+                  <template v-if="vp.expect_result" #suffix>
+                    <n-text style="cursor: pointer; color: #d03050;" @click="item.params.splice(vpi, 1)">×</n-text>
+                  </template>
+                </n-input>
+              </div>
+              <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
+              <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                <n-select
+                  v-model:value="vp.actual_result.keyword"
+                  :options="actionOptions"
+                  :render-label="renderKeywordLabel"
+                  placeholder="keyword"
+                  size="small"
+                  style="flex: 1; min-width: 120px;"
+                />
+                <n-select
+                  v-model:value="vp.actual_result.element"
+                  :options="elementOptions"
+                  :render-label="renderElementLabel"
+                  placeholder="element"
+                  size="small"
+                  clearable
+                  style="flex: 1; min-width: 120px;"
+                />
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
                 <n-tag
-                  v-for="(p, i) in editForm.validate.paramsList"
-                  :key="i"
+                  v-for="(p, pi) in vp.actual_result.params"
+                  :key="pi"
                   closable
-                  size="large"
-                  @close="editForm.validate.paramsList.splice(i, 1)"
+                  size="small"
+                  @close="vp.actual_result.params.splice(pi, 1)"
                 >
                   {{ p }}
                 </n-tag>
                 <n-input
-                  v-if="editForm.validate.showInput"
-                  v-model:value="editForm.validate.newParam"
-                  placeholder="输入断言参数后回车"
-                  @keydown.enter="confirmValidateParam"
-                  @blur="editForm.validate.showInput = false"
+                  v-if="vp.actual_result._showInput"
+                  v-model:value="vp.actual_result._newParam"
+                  size="small"
+                  placeholder="输入参数后回车"
+                  @keydown.enter="confirmValidateActualParam(vp)"
+                  @blur="vp.actual_result._showInput = false"
                   autofocus
                 />
-                <n-button v-else dashed @click="editForm.validate.showInput = true">
-                  + 添加参数
-                </n-button>
+                <n-button v-else size="tiny" dashed @click="vp.actual_result._showInput = true">+ 参数</n-button>
               </div>
-            </n-form-item>
-          </n-gi>
-        </n-grid>
+            </div>
+            <n-button size="small" dashed @click="addValidateParam(item)">+ 添加参数</n-button>
+          </div>
+          <n-button
+            size="small"
+            type="error"
+            ghost
+            style="margin-top: 28px;"
+            @click="editForm.validate.items.splice(vi, 1)"
+          >
+            删除
+          </n-button>
+        </div>
+        <n-button size="small" dashed @click="addValidateItem">+ 添加断言</n-button>
 
         <n-space justify="end">
           <n-button @click="showEdit = false">取消</n-button>
@@ -421,10 +474,13 @@
     },
     validate: {
       id: null as number | null,
-      validate_type: null as string | null,
-      paramsList: [] as string[],
-      showInput: false,
-      newParam: '',
+      items: [] as {
+        validate_type: string | null;
+        params: {
+          expect_result: string;
+          actual_result: { keyword: string | null; element: number | null; params: string[] };
+        }[];
+      }[],
     },
   });
 
@@ -470,16 +526,25 @@
     // validate 参数
     const vd = record.validate_id || {};
     editForm.validate.id = vd.id ?? null;
-    editForm.validate.validate_type = vd.validate_type ?? null;
-    let vParams: string[] = [];
-    if (Array.isArray(vd.validate_params)) {
-      vParams = vd.validate_params.map((p: any) => String(p));
-    } else if (vd.validate_params != null && vd.validate_params !== '') {
-      vParams = [String(vd.validate_params)];
+    if (vd.validate_type) {
+      const types = Array.isArray(vd.validate_type) ? vd.validate_type : [vd.validate_type];
+      const rawParams = Array.isArray(vd.validate_params) ? vd.validate_params : (vd.validate_params ? [vd.validate_params] : []);
+      editForm.validate.items = types.map((t: string) => ({
+        validate_type: t,
+        params: rawParams.map((p: any) => ({
+          expect_result: p?.expect_result ?? '',
+          actual_result: {
+            keyword: p?.actual_result?.keyword ?? null,
+            element: p?.actual_result?.element ?? null,
+            params: Array.isArray(p?.actual_result?.params) ? p.actual_result.params : [],
+            _showInput: false,
+            _newParam: '',
+          },
+        })),
+      }));
+    } else {
+      editForm.validate.items = [];
     }
-    editForm.validate.paramsList = vParams;
-    editForm.validate.showInput = false;
-    editForm.validate.newParam = '';
     // 深拷贝 step_id，保留 id/keyword_id/element_id/action_id 等外键字段原样回传
     editForm.steps = Array.isArray(record.step_id)
       ? record.step_id.map((s: any, i: number) => {
@@ -576,14 +641,30 @@
     step.showParamInput = false;
   }
 
-  // validate 参数：回车确认添加
-  function confirmValidateParam() {
-    const val = (editForm.validate.newParam || '').trim();
+  // validate：添加一组断言
+  function addValidateItem() {
+    editForm.validate.items.push({
+      validate_type: null,
+      params: [],
+    });
+  }
+
+  // validate：在某组断言下添加一个 validate_param
+  function addValidateParam(item: any) {
+    item.params.push({
+      expect_result: '',
+      actual_result: { keyword: null, element: null, params: [], _showInput: false, _newParam: '' },
+    });
+  }
+
+  // validate：actual_result.params 回车确认
+  function confirmValidateActualParam(vp: any) {
+    const val = (vp.actual_result._newParam || '').trim();
     if (val) {
-      editForm.validate.paramsList.push(val);
+      vp.actual_result.params.push(val);
     }
-    editForm.validate.newParam = '';
-    editForm.validate.showInput = false;
+    vp.actual_result._newParam = '';
+    vp.actual_result._showInput = false;
   }
 
   // 修改 order 后按执行顺序重排行，允许不连续但不允许重复
@@ -626,11 +707,20 @@
         } as any);
       }
 
-      // 1d. 更新 validate（有 id 才 PUT）
-      if (editForm.validate.id != null) {
+      // 1d. 更新 validate（有 id 才 PUT，提交第一组，清理临时字段）
+      if (editForm.validate.id != null && editForm.validate.items.length > 0) {
+        const first = editForm.validate.items[0];
+        const cleanParams = first.params.map((p: any) => ({
+          expect_result: p.expect_result,
+          actual_result: {
+            keyword: p.actual_result.keyword,
+            element: p.actual_result.element,
+            params: p.actual_result.params,
+          },
+        }));
         await validateAPI.updateDataByID(editForm.validate.id, {
-          validate_type: editForm.validate.validate_type,
-          validate_params: editForm.validate.paramsList,
+          validate_type: first.validate_type,
+          validate_params: cleanParams,
         } as any);
       }
 
