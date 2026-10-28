@@ -1,6 +1,6 @@
 import { http } from '@/utils/http/axios';
 import { BaseModelAPI } from '../base_api';
-import { Action, Element, KeyWord, CaseUI, Step, Allure, Parametrize, Validate } from './models';
+import { Action, Element, KeyWord, CaseUI } from './models';
 
 export class ElementAPI extends BaseModelAPI<Element> {
   base_url = '/case_ui/element/';
@@ -24,22 +24,6 @@ export class KeyWordAPI extends BaseModelAPI<KeyWord> {
 
 export class CaseUIAPI extends BaseModelAPI<CaseUI> {
   base_url = '/case_ui/case/';
-}
-
-export class StepAPI extends BaseModelAPI<Step> {
-  base_url = '/case_ui/step/';
-}
-
-export class AllureAPI extends BaseModelAPI<Allure> {
-  base_url = '/case_ui/allure/';
-}
-
-export class ParametrizeAPI extends BaseModelAPI<Parametrize> {
-  base_url = '/case_ui/parametrize/';
-}
-
-export class ValidateAPI extends BaseModelAPI<Validate> {
-  base_url = '/case_ui/validate/';
 }
 
 export class ActionAPI extends BaseModelAPI<Action> {

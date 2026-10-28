@@ -3,18 +3,16 @@ import { BasicColumn } from '@/components/Table';
 /** 测试步骤（Action）展示字段，对应后端 /api/case_ui/action/ */
 export interface ActionData {
   id: number;
-  /** 测试步骤名 */
+  /** 操作名 */
   name: string;
-  /** 执行顺序 */
-  sort: number;
   /** Allure 参数（嵌套对象） */
-  allure_id?: any;
+  allure?: any;
   /** 参数化参数（嵌套对象） */
-  parametrize_id?: any;
-  /** 断言参数（嵌套对象） */
-  validate_id?: any;
+  parametrize?: any;
+  /** 断言参数（嵌套对象：{ equals: [...], contains: [...] }） */
+  validate?: any;
   /** 页面操作（Step 列表） */
-  step_id?: any[];
+  step?: any[];
 }
 
 // 嵌套对象/数组压平为一行文本（字段用 ｜ 分隔，数组用、分隔）
@@ -32,7 +30,7 @@ function formatInline(v: any): string {
 // Allure 参数分组列：组头下方分 feature / story / title / description 四列展示
 function renderAllureField(field: string) {
   return (row: ActionData) => {
-    const allure = row.allure_id;
+    const allure = row.allure;
     return (allure && allure[field]) || '-';
   };
 }
@@ -45,7 +43,7 @@ export const columns: BasicColumn<ActionData>[] = [
   },
   {
     title: 'Allure 参数',
-    key: 'allure_id',
+    key: 'allure',
     titleAlign: 'center',
     children: [
       {
@@ -69,15 +67,15 @@ export const columns: BasicColumn<ActionData>[] = [
         render: renderAllureField('description'),
       },
     ],
-  },
+  } as any,
   {
     title: '参数化参数',
-    key: 'parametrize_id',
-    render: (row) => formatInline(row.parametrize_id),
+    key: 'parametrize',
+    render: (row) => formatInline(row.parametrize),
   },
   {
     title: '断言参数',
-    key: 'validate_id',
-    render: (row) => formatInline(row.validate_id),
+    key: 'validate',
+    render: (row) => formatInline(row.validate),
   },
 ];

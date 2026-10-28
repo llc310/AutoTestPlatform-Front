@@ -51,7 +51,7 @@
           />
         </n-form-item>
 
-        <!-- 操作步骤列表（step_id） -->
+        <!-- 操作步骤列表（step） -->
         <n-divider title-placement="center" style="margin: 8px 0">
           <span style="font-size: 14px; font-weight: 600">操作步骤</span>
         </n-divider>
@@ -259,10 +259,10 @@
   import { reactive, ref, computed, onMounted, h } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns } from './actionListColumns';
-  import { useMessage, useDialog, NTooltip, NSelect, NDynamicTags } from 'naive-ui';
+  import { useMessage, useDialog, NTooltip, NSelect } from 'naive-ui';
   import { DeleteOutlined, EditOutlined, EyeOutlined } from '@vicons/antd';
   import { http } from '@/utils/http/axios';
-  import { ActionAPI, StepAPI, AllureAPI, KeyWordAPI, ParametrizeAPI, ValidateAPI, ElementAPI } from '@/api/case_ui/http';
+  import { ActionAPI, KeyWordAPI, ElementAPI } from '@/api/case_ui/http';
   import { useRoute, useRouter } from 'vue-router';
 
   const route = useRoute();
@@ -271,12 +271,8 @@
   const dialog = useDialog();
   const actionRef = ref();
   const actionAPI = new ActionAPI();
-  const stepAPI = new StepAPI();
-  const allureAPI = new AllureAPI();
   const keywordAPI = new KeyWordAPI();
   const elementAPI = new ElementAPI();
-  const parametrizeAPI = new ParametrizeAPI();
-  const validateAPI = new ValidateAPI();
 
   // 当前项目 id
   const projectId = Number(route.params.id);
@@ -491,8 +487,6 @@
     { label: 'db_equals', value: 'db_equals' },
     { label: 'db_contains', value: 'db_contains' },
   ];
-  // 打开弹窗时的原始 step id 集合，用于保存时 diff 出删除项
-  const originalStepIds = ref<number[]>([]);
 
   function openEditDialog(record) {
     editingId.value = record.id ?? null;
@@ -502,52 +496,48 @@
     if (!projectName.value) {
       loadProjectName();
     }
-    // allure 四个字段
-    const al = record.allure_id || {};
+    // allure 四个字段（后端已聚合进 Action.allure）
+    const al = record.allure || {};
     editForm.allure.id = al.id ?? null;
     editForm.allure.feature = al.feature ?? '';
     editForm.allure.story = al.story ?? '';
     editForm.allure.title = al.title ?? '';
     editForm.allure.description = al.description ?? '';
-    // parametrize 参数：后端返回单个 parametrize 对象，包成 items 数组
-    const pm = record.parametrize_id || {};
+    // parametrize 参数：后端为 { key: [value...] } 映射结构，每个 key 生成一组 items
+    const pm = record.parametrize || {};
     editForm.parametrize.id = pm.id ?? null;
-    if (pm.param_key) {
-      let values: string[] = [];
-      if (Array.isArray(pm.param_value)) {
-        values = pm.param_value;
-      } else if (pm.param_value != null && pm.param_value !== '') {
-        values = [String(pm.param_value)];
-      }
-      editForm.parametrize.items = [{ param_key: pm.param_key, param_values: values }];
-    } else {
-      editForm.parametrize.items = [];
+    editForm.parametrize.items = [];
+    for (const [k, v] of Object.entries(pm)) {
+      if (k === 'id') continue;
+      const values = Array.isArray(v) ? v.map((x: any) => String(x)) : v != null ? [String(v)] : [];
+      editForm.parametrize.items.push({ param_key: k, param_values: values });
     }
-    // validate 参数
-    const vd = record.validate_id || {};
+    // validate 参数：后端结构为 { validate_type: [{expect_result, actual_result:{keyword_id, element_id, params}}] }
+    const vd = record.validate || {};
     editForm.validate.id = vd.id ?? null;
-    if (vd.validate_type) {
-      const types = Array.isArray(vd.validate_type) ? vd.validate_type : [vd.validate_type];
-      const rawParams = Array.isArray(vd.validate_params) ? vd.validate_params : (vd.validate_params ? [vd.validate_params] : []);
-      editForm.validate.items = types.map((t: string) => ({
-        validate_type: t,
-        params: rawParams.map((p: any) => ({
+    const vItems: any[] = [];
+    for (const [type, params] of Object.entries(vd)) {
+      if (type === 'id') continue;
+      const arr = Array.isArray(params) ? params : params ? [params] : [];
+      vItems.push({
+        validate_type: type,
+        params: arr.map((p: any) => ({
           expect_result: p?.expect_result ?? '',
           actual_result: {
-            keyword: p?.actual_result?.keyword ?? null,
-            element: p?.actual_result?.element ?? null,
+            // 后端返回 keyword_id，下拉 value 是关键字名，需要反查名称才能选中显示
+            keyword: keywordIdToName(p?.actual_result?.keyword_id),
+            element: p?.actual_result?.element_id ?? null,
             params: Array.isArray(p?.actual_result?.params) ? p.actual_result.params : [],
             _showInput: false,
             _newParam: '',
           },
         })),
-      }));
-    } else {
-      editForm.validate.items = [];
+      });
     }
-    // 深拷贝 step_id，保留 id/keyword_id/element_id/action_id 等外键字段原样回传
-    editForm.steps = Array.isArray(record.step_id)
-      ? record.step_id.map((s: any, i: number) => {
+    editForm.validate.items = vItems;
+    // 深拷贝 step（后端已聚合进 Action.step），保留 id/keyword_id/element_id 等字段原样回传
+    editForm.steps = Array.isArray(record.step)
+      ? record.step.map((s: any, i: number) => {
           // 兼容旧结构 {value:"xxx"} 和新结构数组 ["xxx","yyy"]
           let paramsList: string[] = [];
           if (Array.isArray(s.params)) {
@@ -569,9 +559,6 @@
           };
         })
       : [];
-    originalStepIds.value = editForm.steps
-      .map((s) => s.id)
-      .filter((id): id is number => id != null);
     showEdit.value = true;
   }
 
@@ -596,6 +583,16 @@
     step.keyword_id = matched ? matched.id : null;
   }
 
+  // keyword_id ↔ 关键字名互转（下拉 value 用名称，后端存 id）
+  function keywordIdToName(id: any): string | null {
+    const opt = actionOptions.value.find((o) => String(o.id) === String(id));
+    return opt ? opt.label : null;
+  }
+  function keywordNameToId(name: any): number | null {
+    const opt = actionOptions.value.find((o) => o.value === name);
+    return opt ? opt.id : null;
+  }
+
   // 参数 tag 输入：按空格生成块
   function handleParamKeydown(e: KeyboardEvent, step: any) {
     if (e.code === 'Space') {
@@ -604,19 +601,6 @@
       const val = (input.value || '').trim();
       if (val && !step.paramsList.includes(val)) {
         step.paramsList.push(val);
-      }
-      input.value = '';
-    }
-  }
-
-  // parametrize param_value 多值输入：按空格生成块
-  function handleParametrizeValueKeydown(e: KeyboardEvent) {
-    if (e.code === 'Space') {
-      e.preventDefault();
-      const input = e.target as HTMLInputElement;
-      const val = (input.value || '').trim();
-      if (val && !editForm.parametrize.param_values.includes(val)) {
-        editForm.parametrize.param_values.push(val);
       }
       input.value = '';
     }
@@ -677,82 +661,62 @@
     editForm.steps.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
   }
 
-  // 保存编辑：先 PUT action 的 name/project_id，再 diff step 列表调独立接口
+  // 保存编辑：一次 PUT 聚合提交（后端 Action 已聚合 allure/step/parametrize/validate）
   async function saveEdit() {
     if (editingId.value == null) return;
     saving.value = true;
     try {
-      // 1. 更新 action 本身（后端 ActionRequest 接受 name/project_id）
+      // 组装 step 列表（嵌套进 action.step）
+      const steps = editForm.steps.map((step) => ({
+        id: step.id ?? null,
+        action: step.action,
+        params: step.paramsList && step.paramsList.length ? step.paramsList : [],
+        sort: step.sort ?? 0,
+        keyword_id: step.keyword_id,
+        element_id: step.element_id,
+      }));
+
+      // parametrize：后端结构为 { key: [value...] }，把 items 组装成映射
+      let parametrize: any = null;
+      if (editForm.parametrize.items.length > 0) {
+        parametrize = {};
+        for (const item of editForm.parametrize.items) {
+          if (!item.param_key) continue;
+          parametrize[item.param_key] = item.param_values.filter((v: string) => v !== '');
+        }
+      }
+
+      // validate：后端结构为 { validate_type: [params] }，把 items 所有组组装成映射
+      let validate: any = null;
+      if (editForm.validate.items.length > 0) {
+        validate = {};
+        for (const item of editForm.validate.items) {
+          if (!item.validate_type) continue;
+          validate[item.validate_type] = item.params.map((p: any) => ({
+            expect_result: p.expect_result,
+            actual_result: {
+              keyword_id: keywordNameToId(p.actual_result.keyword),
+              element_id: p.actual_result.element,
+              params: p.actual_result.params,
+            },
+          }));
+        }
+      }
+
+      // 聚合提交：后端 ActionRequest = name/project_id/allure/step/parametrize/validate
       await actionAPI.updateDataByID(editingId.value, {
         name: editForm.name,
         project_id: editForm.project_id,
-      } as any);
-
-      // 1b. 更新 allure（有 id 才 PUT；无 id 说明 action 尚未关联 allure，跳过）
-      if (editForm.allure.id != null) {
-        await allureAPI.updateDataByID(editForm.allure.id, {
+        allure: {
           feature: editForm.allure.feature,
           story: editForm.allure.story,
           title: editForm.allure.title,
           description: editForm.allure.description,
-        } as any);
-      }
-
-      // 1c. 更新 parametrize（有 id 才 PUT，提交第一个 key-value 组）
-      if (editForm.parametrize.id != null && editForm.parametrize.items.length > 0) {
-        const first = editForm.parametrize.items[0];
-        await parametrizeAPI.updateDataByID(editForm.parametrize.id, {
-          param_key: first.param_key,
-          param_value: first.param_values.length > 1 ? first.param_values : first.param_values[0] ?? '',
-        } as any);
-      }
-
-      // 1d. 更新 validate（有 id 才 PUT，提交第一组，清理临时字段）
-      if (editForm.validate.id != null && editForm.validate.items.length > 0) {
-        const first = editForm.validate.items[0];
-        const cleanParams = first.params.map((p: any) => ({
-          expect_result: p.expect_result,
-          actual_result: {
-            keyword: p.actual_result.keyword,
-            element: p.actual_result.element,
-            params: p.actual_result.params,
-          },
-        }));
-        await validateAPI.updateDataByID(editForm.validate.id, {
-          validate_type: first.validate_type,
-          validate_params: cleanParams,
-        } as any);
-      }
-
-      // 2. diff step 列表
-      const currentStepIds = editForm.steps
-        .map((s) => s.id)
-        .filter((id): id is number => id != null);
-
-      // 2a. 被删除的 step：原始有、现在没有 → DELETE
-      const deletedIds = originalStepIds.value.filter(
-        (id) => !currentStepIds.includes(id)
-      );
-      for (const id of deletedIds) {
-        await stepAPI.deleteDataByID(id);
-      }
-
-      // 2b. 遍历当前列表：有 id 的 PUT 更新，没 id 的 POST 新建
-      for (const step of editForm.steps) {
-        const payload = {
-          action: step.action,
-          params: step.paramsList && step.paramsList.length ? step.paramsList : {},
-          sort: step.sort ?? 0,
-          keyword_id: step.keyword_id,
-          element_id: step.element_id,
-          action_id: editingId.value,
-        };
-        if (step.id != null) {
-          await stepAPI.updateDataByID(step.id, payload as any);
-        } else {
-          await stepAPI.createData(payload as any);
-        }
-      }
+        },
+        step: steps,
+        parametrize,
+        validate,
+      } as any);
 
       message.success('保存成功');
       showEdit.value = false;

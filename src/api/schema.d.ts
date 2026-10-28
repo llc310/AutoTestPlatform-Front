@@ -244,38 +244,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/case_ui/allure/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_allure_list"];
-        put?: never;
-        post: operations["case_ui_allure_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/case_ui/allure/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_allure_retrieve"];
-        put: operations["case_ui_allure_update"];
-        post?: never;
-        delete: operations["case_ui_allure_destroy"];
-        options?: never;
-        head?: never;
-        patch: operations["case_ui_allure_partial_update"];
-        trace?: never;
-    };
     "/api/case_ui/case/": {
         parameters: {
             query?: never;
@@ -402,102 +370,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["case_ui_keyword_partial_update"];
-        trace?: never;
-    };
-    "/api/case_ui/parametrize/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_parametrize_list"];
-        put?: never;
-        post: operations["case_ui_parametrize_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/case_ui/parametrize/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_parametrize_retrieve"];
-        put: operations["case_ui_parametrize_update"];
-        post?: never;
-        delete: operations["case_ui_parametrize_destroy"];
-        options?: never;
-        head?: never;
-        patch: operations["case_ui_parametrize_partial_update"];
-        trace?: never;
-    };
-    "/api/case_ui/step/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_step_list"];
-        put?: never;
-        post: operations["case_ui_step_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/case_ui/step/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_step_retrieve"];
-        put: operations["case_ui_step_update"];
-        post?: never;
-        delete: operations["case_ui_step_destroy"];
-        options?: never;
-        head?: never;
-        patch: operations["case_ui_step_partial_update"];
-        trace?: never;
-    };
-    "/api/case_ui/validate/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_validate_list"];
-        put?: never;
-        post: operations["case_ui_validate_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/case_ui/validate/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["case_ui_validate_retrieve"];
-        put: operations["case_ui_validate_update"];
-        post?: never;
-        delete: operations["case_ui_validate_destroy"];
-        options?: never;
-        head?: never;
-        patch: operations["case_ui_validate_partial_update"];
         trace?: never;
     };
     "/api/project/config/": {
@@ -816,24 +688,30 @@ export interface components {
     schemas: {
         Action: {
             readonly id: number;
-            readonly allure_id: components["schemas"]["Allure"];
-            readonly parametrize_id: components["schemas"]["Parametrize"];
-            readonly validate_id: components["schemas"]["Validate"];
-            readonly step_id: components["schemas"]["Step"][];
-            /**
-             * 执行顺序
-             * Format: int64
-             */
-            sort: number;
+            /** 操作名 */
+            name: string;
+            /** Allure参数 */
+            allure: unknown;
+            /** 页面操作步骤 */
+            step: unknown;
+            /** 参数化参数 */
+            parametrize?: unknown;
+            /** 断言参数 */
+            validate?: unknown;
             /** 项目id */
             project_id: number;
         };
         ActionRequest: {
-            /**
-             * 执行顺序
-             * Format: int64
-             */
-            sort: number;
+            /** 操作名 */
+            name: string;
+            /** Allure参数 */
+            allure: unknown;
+            /** 页面操作步骤 */
+            step: unknown;
+            /** 参数化参数 */
+            parametrize?: unknown;
+            /** 断言参数 */
+            validate?: unknown;
             /** 项目id */
             project_id: number;
         };
@@ -841,27 +719,6 @@ export interface components {
             readonly id: number;
             /** 昵称 */
             name: string;
-        };
-        Allure: {
-            readonly id: number;
-            /** 所属模块 */
-            feature?: string;
-            /** 功能名 */
-            story?: string;
-            /** 用例标题 */
-            title?: string;
-            /** 用例描述 */
-            description?: string;
-        };
-        AllureRequest: {
-            /** 所属模块 */
-            feature?: string;
-            /** 功能名 */
-            story?: string;
-            /** 用例标题 */
-            title?: string;
-            /** 用例描述 */
-            description?: string;
         };
         CaseAPI: {
             readonly id: number;
@@ -1063,21 +920,6 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["AllProfile"][];
         };
-        PaginatedAllureList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["Allure"][];
-        };
         PaginatedCaseAPIInfoList: {
             /** @example 123 */
             count: number;
@@ -1198,21 +1040,6 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["KeyWord"][];
         };
-        PaginatedParametrizeList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["Parametrize"][];
-        };
         PaginatedPositionList: {
             /** @example 123 */
             count: number;
@@ -1273,21 +1100,6 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Role"][];
         };
-        PaginatedStepList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["Step"][];
-        };
         PaginatedSuiteList: {
             /** @example 123 */
             count: number;
@@ -1303,52 +1115,19 @@ export interface components {
             previous?: string | null;
             results: components["schemas"]["Suite"][];
         };
-        PaginatedValidateList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next?: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous?: string | null;
-            results: components["schemas"]["Validate"][];
-        };
-        Parametrize: {
-            readonly id: number;
-            /** 参数化键名 */
-            param_key: string;
-            /** 参数化键值 */
-            param_value: unknown;
-        };
-        ParametrizeRequest: {
-            /** 参数化键名 */
-            param_key: string;
-            /** 参数化键值 */
-            param_value: unknown;
-        };
         PatchedActionRequest: {
-            /**
-             * 执行顺序
-             * Format: int64
-             */
-            sort?: number;
+            /** 操作名 */
+            name?: string;
+            /** Allure参数 */
+            allure?: unknown;
+            /** 页面操作步骤 */
+            step?: unknown;
+            /** 参数化参数 */
+            parametrize?: unknown;
+            /** 断言参数 */
+            validate?: unknown;
             /** 项目id */
             project_id?: number;
-        };
-        PatchedAllureRequest: {
-            /** 所属模块 */
-            feature?: string;
-            /** 功能名 */
-            story?: string;
-            /** 用例标题 */
-            title?: string;
-            /** 用例描述 */
-            description?: string;
         };
         PatchedCaseAPIInfoRequest: {
             endpoint?: components["schemas"]["EndpointRequest"];
@@ -1420,12 +1199,6 @@ export interface components {
             /** 操作描述 */
             description?: string;
         };
-        PatchedParametrizeRequest: {
-            /** 参数化键名 */
-            param_key?: string;
-            /** 参数化键值 */
-            param_value?: unknown;
-        };
         PatchedPositionRequest: {
             /** 职位名称 */
             name?: string;
@@ -1452,18 +1225,6 @@ export interface components {
             /** 职位 */
             position?: number;
         };
-        PatchedStepRequest: {
-            /** 操作 */
-            action?: string;
-            /** 参数值 */
-            params?: unknown;
-            /** 关键字id */
-            keyword_id?: number | null;
-            /** 页面元素id */
-            element_id?: number | null;
-            /** 测试步骤id */
-            action_id?: number;
-        };
         PatchedSuiteRequest: {
             /** 套件名称 */
             name?: string;
@@ -1482,12 +1243,6 @@ export interface components {
             case_ui_list?: number[];
             /** 接口测试用例id */
             case_api_list?: number[];
-        };
-        PatchedValidateRequest: {
-            /** 断言类型 */
-            validate_type?: components["schemas"]["ValidateTypeEnum"];
-            /** 断言参数 */
-            validate_params?: unknown;
         };
         Position: {
             readonly id: number;
@@ -1615,31 +1370,6 @@ export interface components {
          * @enum {integer}
          */
         StatusEnum: 0 | 1 | 2 | 3 | 4 | -1;
-        Step: {
-            readonly id: number;
-            /** 操作 */
-            action: string;
-            /** 参数值 */
-            params?: unknown;
-            /** 关键字id */
-            keyword_id?: number | null;
-            /** 页面元素id */
-            element_id?: number | null;
-            /** 测试步骤id */
-            action_id: number;
-        };
-        StepRequest: {
-            /** 操作 */
-            action: string;
-            /** 参数值 */
-            params?: unknown;
-            /** 关键字id */
-            keyword_id?: number | null;
-            /** 页面元素id */
-            element_id?: number | null;
-            /** 测试步骤id */
-            action_id: number;
-        };
         Suite: {
             readonly id: number;
             /** 套件名称 */
@@ -1694,27 +1424,6 @@ export interface components {
             position: string;
             is_leader: boolean;
         };
-        Validate: {
-            readonly id: number;
-            /** 断言类型 */
-            validate_type: components["schemas"]["ValidateTypeEnum"];
-            /** 断言参数 */
-            validate_params: unknown;
-        };
-        ValidateRequest: {
-            /** 断言类型 */
-            validate_type: components["schemas"]["ValidateTypeEnum"];
-            /** 断言参数 */
-            validate_params: unknown;
-        };
-        /**
-         * @description * `equals` - Equals
-         *     * `contains` - Contains
-         *     * `db_equals` - Db Equals
-         *     * `db_contains` - Db Contains
-         * @enum {string}
-         */
-        ValidateTypeEnum: "equals" | "contains" | "db_equals" | "db_contains";
     };
     responses: never;
     parameters: never;
@@ -2470,152 +2179,6 @@ export interface operations {
             };
         };
     };
-    case_ui_allure_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedAllureList"];
-                };
-            };
-        };
-    };
-    case_ui_allure_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["AllureRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["AllureRequest"];
-                "multipart/form-data": components["schemas"]["AllureRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Allure"];
-                };
-            };
-        };
-    };
-    case_ui_allure_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this allure. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Allure"];
-                };
-            };
-        };
-    };
-    case_ui_allure_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this allure. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["AllureRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["AllureRequest"];
-                "multipart/form-data": components["schemas"]["AllureRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Allure"];
-                };
-            };
-        };
-    };
-    case_ui_allure_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this allure. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    case_ui_allure_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this allure. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedAllureRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedAllureRequest"];
-                "multipart/form-data": components["schemas"]["PatchedAllureRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Allure"];
-                };
-            };
-        };
-    };
     case_ui_case_list: {
         parameters: {
             query?: {
@@ -3094,444 +2657,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["KeyWord"];
-                };
-            };
-        };
-    };
-    case_ui_parametrize_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedParametrizeList"];
-                };
-            };
-        };
-    };
-    case_ui_parametrize_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ParametrizeRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ParametrizeRequest"];
-                "multipart/form-data": components["schemas"]["ParametrizeRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Parametrize"];
-                };
-            };
-        };
-    };
-    case_ui_parametrize_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this parametrize. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Parametrize"];
-                };
-            };
-        };
-    };
-    case_ui_parametrize_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this parametrize. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ParametrizeRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ParametrizeRequest"];
-                "multipart/form-data": components["schemas"]["ParametrizeRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Parametrize"];
-                };
-            };
-        };
-    };
-    case_ui_parametrize_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this parametrize. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    case_ui_parametrize_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this parametrize. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedParametrizeRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedParametrizeRequest"];
-                "multipart/form-data": components["schemas"]["PatchedParametrizeRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Parametrize"];
-                };
-            };
-        };
-    };
-    case_ui_step_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedStepList"];
-                };
-            };
-        };
-    };
-    case_ui_step_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StepRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["StepRequest"];
-                "multipart/form-data": components["schemas"]["StepRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Step"];
-                };
-            };
-        };
-    };
-    case_ui_step_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this step. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Step"];
-                };
-            };
-        };
-    };
-    case_ui_step_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this step. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StepRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["StepRequest"];
-                "multipart/form-data": components["schemas"]["StepRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Step"];
-                };
-            };
-        };
-    };
-    case_ui_step_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this step. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    case_ui_step_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this step. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedStepRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedStepRequest"];
-                "multipart/form-data": components["schemas"]["PatchedStepRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Step"];
-                };
-            };
-        };
-    };
-    case_ui_validate_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedValidateList"];
-                };
-            };
-        };
-    };
-    case_ui_validate_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ValidateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ValidateRequest"];
-                "multipart/form-data": components["schemas"]["ValidateRequest"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Validate"];
-                };
-            };
-        };
-    };
-    case_ui_validate_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this validate. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Validate"];
-                };
-            };
-        };
-    };
-    case_ui_validate_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this validate. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ValidateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ValidateRequest"];
-                "multipart/form-data": components["schemas"]["ValidateRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Validate"];
-                };
-            };
-        };
-    };
-    case_ui_validate_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this validate. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    case_ui_validate_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this validate. */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedValidateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedValidateRequest"];
-                "multipart/form-data": components["schemas"]["PatchedValidateRequest"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Validate"];
                 };
             };
         };

@@ -92,10 +92,13 @@ export interface Parametrize {
 export interface Validate {
   readonly id: number;
   /** 断言类型 */
-  validate_type: components['schemas']['ValidateTypeEnum'];
+  validate_type: ValidateTypeEnum;
   /** 断言参数 */
   validate_params: unknown;
 }
+
+// 断言类型枚举（对应后端 ValidateTypeEnum）
+export type ValidateTypeEnum = 'equals' | 'contains' | 'db_equals' | 'db_contains';
 
 // 测试步骤（Action）下的单条操作
 export interface Step {
@@ -115,36 +118,41 @@ export interface Step {
 }
 
 // 测试步骤模型（接口返回，字段与后端 /api/case_ui/action/ 保持一致）
+// 后端已改为聚合结构：allure/step/parametrize/validate 直接嵌套在 Action 内
 export interface Action {
   readonly id: number;
-  /** 测试步骤名 */
+  /** 操作名 */
   name: string;
   /** 项目id */
   project_id: number;
-  /** allure参数（只读） */
-  readonly allure_id: Allure;
-  /** 参数化（只读，可空） */
-  readonly parametrize_id: Parametrize | null;
-  /** 断言（只读，可空） */
-  readonly validate_id: Validate | null;
-  /** 操作步骤列表（只读） */
-  readonly step_id: Step[];
+  /** Allure参数 */
+  allure?: Allure | null;
+  /** 页面操作步骤 */
+  step?: Step[];
+  /** 参数化参数（可空） */
+  parametrize?: Parametrize | null;
+  /** 断言参数（可空） */
+  validate?: Validate | null;
 }
 
 // 创建 / 更新测试步骤的请求体
 export interface ActionRequest {
-  /** 测试步骤名 */
+  /** 操作名 */
   name: string;
   /** 项目id */
   project_id: number;
+  /** Allure参数 */
+  allure?: Allure | null;
+  /** 页面操作步骤 */
+  step?: Step[];
+  /** 参数化参数（可空） */
+  parametrize?: Parametrize | null;
+  /** 断言参数（可空） */
+  validate?: Validate | null;
 }
 
-// 兼容 openapi 生成的类型
+// 兼容 openapi 生成的类型（嵌套结构在后端 swagger 中未定义具体类型，保留自定义模型）
 export type ElementSchema = components['schemas']['Element'];
 export type KeyWordSchema = components['schemas']['KeyWord'];
 export type ActionSchema = components['schemas']['Action'];
 export type CaseUISchema = components['schemas']['CaseUI'];
-export type AllureSchema = components['schemas']['Allure'];
-export type ParametrizeSchema = components['schemas']['Parametrize'];
-export type ValidateSchema = components['schemas']['Validate'];
-export type StepSchema = components['schemas']['Step'];
