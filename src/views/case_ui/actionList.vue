@@ -89,6 +89,7 @@
                 placeholder="元素"
                 clearable
                 style="width: 130px"
+                @focus="loadElements"
               />
               <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
                 <n-tag
@@ -208,6 +209,7 @@
                   size="small"
                   clearable
                   style="flex: 1; min-width: 120px;"
+                  @focus="loadElements"
                 />
               </div>
               <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -406,7 +408,12 @@
   async function loadElements() {
     try {
       const res: any = await elementAPI.getElement({ project_id: projectId });
-      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      // 兼容多种返回结构：{code,result:{...}} 包装 / DRF 裸分页 {count,results} / {list} / 数组
+      let data: any = res;
+      if (data && typeof data === 'object' && 'result' in data) {
+        data = data.result;
+      }
+      const list = data?.list || data?.results || (Array.isArray(data) ? data : []);
       elementOptions.value = list.map((el: any) => ({
         label: el.name,
         value: el.id,
@@ -415,6 +422,7 @@
       }));
     } catch (e) {
       console.error('加载元素列表失败:', e);
+      message.error('加载元素列表失败');
     }
   }
 
@@ -593,6 +601,15 @@
     return opt ? opt.id : null;
   }
 
+  // 参数类型转换：'123' 带引号 → 字符串 "123"；纯数字 → int/float；其余 → 原样字符串
+  function toTypedValue(v: any): string | number {
+    const s = String(v ?? '');
+    if (/^'.*'$/.test(s)) return s.slice(1, -1);       // 引号包裹 → 强制字符串
+    if (/^-?\d+$/.test(s)) return parseInt(s, 10);    // 整数
+    if (/^-?\d+\.\d+$/.test(s)) return parseFloat(s); // 浮点
+    return s;                                          // 普通字符串
+  }
+
   // 参数 tag 输入：按空格生成块
   function handleParamKeydown(e: KeyboardEvent, step: any) {
     if (e.code === 'Space') {
@@ -661,50 +678,53 @@
     editForm.steps.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
   }
 
-  // 保存编辑：一次 PUT 聚合提交（后端 Action 已聚合 allure/step/parametrize/validate）
+  // 保存编辑：一次 POST 聚合提交到 test_action_edit（后端 ActionRequest = name/allure/step/parametrize/validate）
   async function saveEdit() {
     if (editingId.value == null) return;
     saving.value = true;
     try {
-      // 组装 step 列表（嵌套进 action.step）
+      // 组装 step 列表（嵌套进 action.step，只提交后端需要的字段）
       const steps = editForm.steps.map((step) => ({
-        id: step.id ?? null,
-        action: step.action,
-        params: step.paramsList && step.paramsList.length ? step.paramsList : [],
         sort: step.sort ?? 0,
         keyword_id: step.keyword_id,
         element_id: step.element_id,
+        params: step.paramsList && step.paramsList.length ? step.paramsList.map((p: string) => toTypedValue(p)) : [],
       }));
 
-      // parametrize：后端结构为 { key: [value...] }，把 items 组装成映射
-      let parametrize: any = null;
-      if (editForm.parametrize.items.length > 0) {
-        parametrize = {};
-        for (const item of editForm.parametrize.items) {
-          if (!item.param_key) continue;
-          parametrize[item.param_key] = item.param_values.filter((v: string) => v !== '');
+      // parametrize：后端结构为 { key: [value...] }，把 items 组装成映射（空时传 {}）
+      const parametrize: any = {};
+      for (const item of editForm.parametrize.items) {
+        if (!item.param_key) continue;
+        const values = item.param_values
+          .filter((v: string) => v !== '')
+          .map((v: string) => toTypedValue(v));
+        // 同一 key 出现多次时追加合并，避免覆盖
+        if (parametrize[item.param_key]) {
+          parametrize[item.param_key] = parametrize[item.param_key].concat(values);
+        } else {
+          parametrize[item.param_key] = values;
         }
       }
 
-      // validate：后端结构为 { validate_type: [params] }，把 items 所有组组装成映射
-      let validate: any = null;
-      if (editForm.validate.items.length > 0) {
-        validate = {};
-        for (const item of editForm.validate.items) {
-          if (!item.validate_type) continue;
-          validate[item.validate_type] = item.params.map((p: any) => ({
-            expect_result: p.expect_result,
-            actual_result: {
-              keyword_id: keywordNameToId(p.actual_result.keyword),
-              element_id: p.actual_result.element,
-              params: p.actual_result.params,
-            },
-          }));
-        }
+      // validate：后端结构为 { validate_type: [params] }，空时传 {}
+      // 注意：同一 validate_type 可能出现多组（用户选了类型后还能再加），按类型合并 params
+      const validate: any = {};
+      for (const item of editForm.validate.items) {
+        if (!item.validate_type) continue;
+        const mapped = item.params.map((p: any) => ({
+          expect_result: p.expect_result,
+          actual_result: {
+            keyword_id: keywordNameToId(p.actual_result.keyword),
+            element_id: p.actual_result.element,
+            params: p.actual_result.params.map((v: string) => toTypedValue(v)),
+          },
+        }));
+        validate[item.validate_type] = (validate[item.validate_type] || []).concat(mapped);
       }
 
-      // 聚合提交：后端 ActionRequest = name/project_id/allure/step/parametrize/validate
-      await actionAPI.updateDataByID(editingId.value, {
+      // 聚合提交：POST /api/case_ui/action/test_action_edit/
+      await actionAPI.testActionEdit({
+        id: editingId.value,
         name: editForm.name,
         project_id: editForm.project_id,
         allure: {
