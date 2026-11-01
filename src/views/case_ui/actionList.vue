@@ -106,7 +106,7 @@
                   v-model:value="step.newParam"
                   placeholder="输入参数后回车"
                   @keydown.enter="confirmStepParam(step)"
-                  @blur="step.showParamInput = false"
+                  @blur="confirmStepParam(step)"
                   autofocus
                 />
                 <n-button v-else dashed @click="step.showParamInput = true">
@@ -141,7 +141,7 @@
               :key="vi"
               style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;"
             >
-              <n-input v-model:value="item.param_values[vi]" placeholder="参数化键值" style="flex: 1">
+              <n-input v-model:value="item.param_values[vi]" placeholder="参数化键值" style="flex: 1" class="pv-input" @blur="removeEmptyParamValue(item, vi)">
                 <template v-if="item.param_values[vi]" #suffix>
                   <n-text style="cursor: pointer; color: #d03050;" @click="item.param_values.splice(vi, 1)">×</n-text>
                 </template>
@@ -168,7 +168,7 @@
             <div style="margin-bottom: 6px; font-size: 14px;">validate_type</div>
             <n-select
               v-model:value="item.validate_type"
-              :options="validateTypeOptions"
+              :options="validateTypeOptionsFor(vi)"
               placeholder="断言类型"
             />
           </div>
@@ -177,6 +177,7 @@
             <div
               v-for="(vp, vpi) in item.params"
               :key="vpi"
+              class="vp-row"
               style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
             >
               <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -228,7 +229,7 @@
                   size="small"
                   placeholder="输入参数后回车"
                   @keydown.enter="confirmValidateActualParam(vp)"
-                  @blur="vp.actual_result._showInput = false"
+                  @blur="confirmValidateActualParam(vp)"
                   autofocus
                 />
                 <n-button v-else size="tiny" dashed @click="vp.actual_result._showInput = true">+ 参数</n-button>
@@ -258,7 +259,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref, computed, onMounted, h } from 'vue';
+  import { reactive, ref, computed, onMounted, onBeforeUnmount, h } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns } from './actionListColumns';
   import { useMessage, useDialog, NTooltip, NSelect } from 'naive-ui';
@@ -632,6 +633,62 @@
     editForm.parametrize.items.push({ param_key: '', param_values: [''] });
   }
 
+  // parametrize：空值输入框失焦自动移除该行（空行无 × 删除符，避免无法删除）
+  function removeEmptyParamValue(item: any, vi: number) {
+    if (!(item.param_values[vi] || '').trim()) {
+      item.param_values.splice(vi, 1);
+    }
+  }
+
+  // 页面级点击：点击不在输入框内的任何地方时，移除空参数行/空输入框
+  // 用捕获阶段（先于按钮 click 触发，如 + 添加值），避免删掉刚新增的空行
+  function onDocClick(e: MouseEvent) {
+    const t = e.target as HTMLElement | null;
+    // 点击在各类下拉弹层内（如关键字/元素/类型下拉的选项）不清理，避免打断选择
+    const inPopup = !!(
+      t &&
+      t.closest &&
+      t.closest('.n-base-select-menu, .n-base-select-option, .n-popover, .n-dropdown, .n-select-menu')
+    );
+    // 1) Parametrize：点击不在参数值输入框内 → 移除所有空参数值行
+    if (!(t && t.closest && t.closest('.pv-input')) && !inPopup) {
+      for (const item of editForm.parametrize.items) {
+        for (let i = item.param_values.length - 1; i >= 0; i--) {
+          if (!(item.param_values[i] || '').trim()) {
+            item.param_values.splice(i, 1);
+          }
+        }
+      }
+    }
+    // 2) Validate：点击不在参数行内 → 移除完全为空的参数行、关闭空的 + 参数小输入框
+    if (!(t && t.closest && t.closest('.vp-row')) && !inPopup) {
+      for (const item of editForm.validate.items) {
+        for (let i = item.params.length - 1; i >= 0; i--) {
+          const vp = item.params[i];
+          if (!vp) continue;
+          const actualEmpty =
+            !vp.actual_result ||
+            (!vp.actual_result.keyword &&
+              vp.actual_result.element == null &&
+              (!vp.actual_result.params || vp.actual_result.params.length === 0));
+          if (!(vp.expect_result || '').trim() && actualEmpty) {
+            item.params.splice(i, 1);
+            continue;
+          }
+          // 参数行有内容但 + 参数小输入框为空 → 关闭小输入框
+          if (
+            vp.actual_result &&
+            vp.actual_result._showInput &&
+            !(vp.actual_result._newParam || '').trim()
+          ) {
+            vp.actual_result._showInput = false;
+            vp.actual_result._newParam = '';
+          }
+        }
+      }
+    }
+  }
+
   // 操作步骤参数：回车确认添加
   function confirmStepParam(step: any) {
     const val = (step.newParam || '').trim();
@@ -648,6 +705,18 @@
       validate_type: null,
       params: [],
     });
+  }
+
+  // validate：某组断言的可选类型——其他组已选过的类型置灰不可再选（每类型只能用一次）
+  function validateTypeOptionsFor(vi: number) {
+    const used = new Set<string>();
+    editForm.validate.items.forEach((it: any, i: number) => {
+      if (i !== vi && it.validate_type) used.add(it.validate_type);
+    });
+    return validateTypeOptions.map((o) => ({
+      ...o,
+      disabled: used.has(o.value as string),
+    }));
   }
 
   // validate：在某组断言下添加一个 validate_param
@@ -767,6 +836,11 @@
     loadProjectName();
     loadKeywords();
     loadElements();
+    document.addEventListener('click', onDocClick, true);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('click', onDocClick, true);
   });
 </script>
 

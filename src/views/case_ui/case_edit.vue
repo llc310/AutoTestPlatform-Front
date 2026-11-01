@@ -37,41 +37,41 @@
                 <n-space vertical :size="8">
                   <n-space align="center" :size="8">
                     <span class="step-index">测试步骤 {{ index + 1 }}</span>
-                    <span>执行顺序：{{ action.sort }}</span>
+                    <span>执行顺序：{{ action.sort ?? index + 1 }}</span>
                   </n-space>
 
                   <div>
                     <span class="step-label">Allure 参数：</span>
-                    <span v-if="allureText(action.allure_id)" class="step-value">
-                      {{ allureText(action.allure_id) }}
+                    <span v-if="allureText(action.allure)" class="step-value">
+                      {{ allureText(action.allure) }}
                     </span>
                     <span v-else>-</span>
                   </div>
                   <div>
                     <span class="step-label">参数化参数：</span>
-                    <span v-if="action.parametrize_id" class="step-value">
-                      {{ formatInline(action.parametrize_id) }}
+                    <span v-if="action.parametrize" class="step-value">
+                      {{ formatInline(action.parametrize) }}
                     </span>
                     <span v-else>-</span>
                   </div>
                   <div>
                     <span class="step-label">断言参数：</span>
-                    <span v-if="action.validate_id" class="step-value">
-                      {{ formatInline(action.validate_id) }}
+                    <span v-if="action.validate" class="step-value">
+                      {{ formatInline(action.validate) }}
                     </span>
                     <span v-else>-</span>
                   </div>
 
                   <div>
                     <span class="step-label">页面操作：</span>
-                    <span v-if="!action.step_id || action.step_id.length === 0">-</span>
+                    <span v-if="!action.step || action.step.length === 0">-</span>
                   </div>
                   <div
-                    v-for="(s, i) in action.step_id"
-                    :key="s.id"
+                    v-for="(s, i) in action.step"
+                    :key="i"
                     class="step-sub"
                   >
-                    操作 {{ i + 1 }}：{{ s.action }}
+                    操作 {{ i + 1 }}：{{ keywordName(s.keyword_id) }}
                     ｜ 参数：{{ formatJson(s.params) }}
                     ｜ 关键字ID：{{ s.keyword_id ?? '-' }}
                     ｜ 元素ID：{{ s.element_id ?? '-' }}
@@ -100,6 +100,7 @@
   import { useRoute, useRouter } from 'vue-router';
   import type { FormRules } from 'naive-ui';
   import { http } from '@/utils/http/axios';
+  import { KeyWordAPI } from '@/api/case_ui/http';
   import type { ActionSchema } from '@/api/case_ui/models';
 
   const route = useRoute();
@@ -119,6 +120,30 @@
 
   // 测试步骤列表（action 实例，只读展示）
   const steps = ref<ActionSchema[]>([]);
+
+  // 关键字 id → 关键字名 映射（步骤展示用）
+  const keywordMap = ref<Record<number, string>>({});
+
+  // 由关键字 id 反查关键字名，查不到时回退显示 id
+  function keywordName(id: number | null | undefined): string {
+    if (id == null) return '-';
+    return keywordMap.value[id] ?? String(id);
+  }
+
+  // 加载关键字列表，用于步骤的关键字名展示
+  async function loadKeywords() {
+    try {
+      const res: any = await new KeyWordAPI().getDataList();
+      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      const map: Record<number, string> = {};
+      for (const k of list) {
+        map[k.id] = k.keyword_name;
+      }
+      keywordMap.value = map;
+    } catch (e) {
+      console.error('加载关键字列表失败:', e);
+    }
+  }
 
   const rules: FormRules = {
     name: [{ required: true, message: '请输入用例名称', trigger: 'blur' }],
@@ -220,6 +245,7 @@
 
   onMounted(() => {
     loadProjectName();
+    loadKeywords();
     loadCaseDetail();
   });
 </script>
