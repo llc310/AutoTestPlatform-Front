@@ -42,16 +42,4 @@ export class ActionAPI extends BaseModelAPI<Action> {
       params: { project_id, ...params },
     });
   }
-
-  /**
-   * 编辑测试步骤（聚合提交）
-   * 对应后端：POST /api/case_ui/action/test_action_edit/，请求体为 ActionRequest
-   */
-  testActionEdit(data: Record<string, any>) {
-    return http.request<any>({
-      url: `${this.base_url}test_action_edit/`,
-      method: 'post',
-      data,
-    });
-  }
 }

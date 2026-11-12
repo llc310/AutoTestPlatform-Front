@@ -20,7 +20,7 @@
     <n-modal
       v-model:show="showEdit"
       preset="card"
-      title="编辑测试步骤"
+      :title="editingId ? '编辑测试步骤' : '新增测试步骤'"
       style="width: 680px"
       :bordered="false"
     >
@@ -255,6 +255,194 @@
         </n-space>
       </n-form>
     </n-modal>
+
+    <!-- 测试步骤详情弹窗（只读，布局与编辑界面一致） -->
+    <n-modal
+      v-model:show="detailShow"
+      preset="card"
+      title="测试步骤详情"
+      style="width: 680px"
+      :bordered="false"
+    >
+      <n-form v-if="detailData" :label-width="90" label-placement="left" label-align="left">
+        <n-form-item label="测试步骤名">
+          <span>{{ detailData.name }}</span>
+        </n-form-item>
+
+        <!-- Allure 参数 -->
+        <n-divider title-placement="center" style="margin: 8px 0">
+          <span style="font-size: 14px; font-weight: 600">Allure 参数</span>
+        </n-divider>
+        <n-form-item label="feature">
+          <span>{{ detailData.allure?.feature || '-' }}</span>
+        </n-form-item>
+        <n-form-item label="story">
+          <span>{{ detailData.allure?.story || '-' }}</span>
+        </n-form-item>
+        <n-form-item label="title">
+          <span>{{ detailData.allure?.title || '-' }}</span>
+        </n-form-item>
+        <n-form-item label="description">
+          <span>{{ detailData.allure?.description || '-' }}</span>
+        </n-form-item>
+
+        <!-- 操作步骤列表（与编辑界面一致） -->
+        <n-divider title-placement="center" style="margin: 8px 0">
+          <span style="font-size: 14px; font-weight: 600">操作步骤</span>
+        </n-divider>
+        <n-form-item label="步骤列表">
+          <div style="width: 100%">
+            <div
+              v-for="(s, idx) in detailData.step || []"
+              :key="idx"
+              style="
+                display: flex;
+                gap: 8px;
+                align-items: flex-start;
+                margin-bottom: 8px;
+              "
+            >
+              <n-input-number :value="s.sort ?? idx + 1" disabled style="width: 70px" placeholder="序号" />
+              <n-input
+                :value="keywordIdToName(s.keyword_id) ?? s.keyword_id ?? ''"
+                readonly
+                placeholder="操作"
+                style="width: 130px"
+              />
+              <n-input
+                :value="String(s.element_id ?? '')"
+                readonly
+                placeholder="元素"
+                style="width: 130px"
+              />
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <n-tag
+                  v-for="(p, i) in s.params || []"
+                  :key="i"
+                  size="large"
+                  style="align-self: flex-start;"
+                >
+                  {{ p }}
+                </n-tag>
+                <span v-if="!s.params || s.params.length === 0" style="color: #999;">无参数</span>
+              </div>
+            </div>
+            <span v-if="!detailData.step || detailData.step.length === 0" style="color: #999;">-</span>
+          </div>
+        </n-form-item>
+
+        <!-- Parametrize 参数（与编辑界面一致） -->
+        <n-divider title-placement="center" style="margin: 8px 0">
+          <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
+        </n-divider>
+        <div
+          v-for="(values, key) in detailData.parametrize || {}"
+          :key="key"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+        >
+          <div style="flex: 1;">
+            <div style="margin-bottom: 6px; font-size: 14px;">param_key</div>
+            <n-input :value="String(key)" readonly placeholder="参数化键名" />
+          </div>
+          <div style="flex: 1;">
+            <div style="margin-bottom: 6px; font-size: 14px;">param_value</div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <n-tag
+                v-for="(v, vi) in values || []"
+                :key="vi"
+                size="large"
+                style="align-self: flex-start;"
+              >
+                {{ v }}
+              </n-tag>
+              <span v-if="!values || values.length === 0" style="color: #999;">-</span>
+            </div>
+          </div>
+        </div>
+        <span
+          v-if="!detailData.parametrize || Object.keys(detailData.parametrize).length === 0"
+          style="color: #999;"
+        >
+          -
+        </span>
+
+        <!-- Validate 参数（与编辑界面一致） -->
+        <n-divider title-placement="center" style="margin: 8px 0">
+          <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
+        </n-divider>
+        <div
+          v-for="(vps, vtype) in detailData.validate || {}"
+          :key="vtype"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+        >
+          <div style="flex: 1;">
+            <div style="margin-bottom: 6px; font-size: 14px;">validate_type</div>
+            <n-input :value="String(vtype)" readonly placeholder="断言类型" />
+          </div>
+          <div style="flex: 1;">
+            <div style="margin-bottom: 6px; font-size: 14px;">validate_params</div>
+            <div
+              v-for="(vp, vpi) in vps || []"
+              :key="vpi"
+              style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
+            >
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <n-input
+                  :value="String(vp.expect_result ?? '')"
+                  readonly
+                  placeholder="expect_result 期望值"
+                  size="small"
+                  style="flex: 1"
+                />
+              </div>
+              <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
+              <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                <n-input
+                  :value="String(keywordIdToName(vp.actual_result?.keyword_id) ?? vp.actual_result?.keyword_id ?? '')"
+                  readonly
+                  placeholder="keyword"
+                  size="small"
+                  style="flex: 1; min-width: 120px;"
+                />
+                <n-input
+                  :value="String(vp.actual_result?.element_id ?? '')"
+                  readonly
+                  placeholder="element"
+                  size="small"
+                  style="flex: 1; min-width: 120px;"
+                />
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <n-tag
+                  v-for="(p, pi) in vp.actual_result?.params || []"
+                  :key="pi"
+                  size="small"
+                  style="align-self: flex-start;"
+                >
+                  {{ p }}
+                </n-tag>
+                <span
+                  v-if="!vp.actual_result?.params || vp.actual_result.params.length === 0"
+                  style="color: #999;"
+                >
+                  无参数
+                </span>
+              </div>
+            </div>
+            <span v-if="!vps || vps.length === 0" style="color: #999;">-</span>
+          </div>
+        </div>
+        <span
+          v-if="!detailData.validate || Object.keys(detailData.validate).length === 0"
+          style="color: #999;"
+        >
+          -
+        </span>
+      </n-form>
+      <div v-else style="display: flex; justify-content: center; padding: 24px 0;">
+        <n-spin />
+      </div>
+    </n-modal>
   </n-card>
 </template>
 
@@ -356,26 +544,46 @@
     router.push({ name: 'case_ui-action' });
   }
 
-  // 以下按钮暂为界面展示，对应后端接口后续完善
+  // 新增测试步骤：打开空表单，保存时走 POST /api/case_ui/action/
   function addAction() {
-    message.info('您点击了新增按钮，增删改暂为界面展示，接口对接后续完善');
+    editingId.value = null;
+    editForm.name = '';
+    editForm.project_id = projectId;
+    editForm.allure.id = null;
+    editForm.allure.feature = '';
+    editForm.allure.story = '';
+    editForm.allure.title = '';
+    editForm.allure.description = '';
+    editForm.parametrize.id = null;
+    editForm.parametrize.items = [];
+    editForm.validate.id = null;
+    editForm.validate.items = [];
+    editForm.steps = [];
+    showEdit.value = true;
   }
 
-  function handleDetail(record) {
-    console.log(record);
-    message.info(`您点击了详情（测试步骤：${record.id}），接口对接后续完善`);
+  // 详情：通过 GET /api/case_ui/action/{id}/ 获取完整数据并只读展示
+  async function handleDetail(record) {
+    detailShow.value = true;
+    detailData.value = null;
+    try {
+      const res: any = await actionAPI.getDataByID(record.id);
+      detailData.value = res ?? record;
+    } catch (e: any) {
+      console.error('获取详情失败，回退使用列表行数据:', e);
+      detailData.value = record;
+    }
   }
 
-  // 编辑：先通过 get_single_action 获取当前项目下的测试步骤，再打开编辑弹窗
+  // 编辑：通过 GET /api/case_ui/action/{id}/ 获取详情，再打开编辑弹窗
   async function handleEdit(record) {
     console.log(record);
     let target: any = record;
     try {
-      const res: any = await actionAPI.getSingleAction(projectId);
-      const list = res?.list || [];
-      target = list.find((item: any) => item.id === record.id) || record;
+      const res: any = await actionAPI.getDataByID(record.id);
+      target = res ?? record;
     } catch (e) {
-      console.error('get_single_action 获取失败，回退使用列表行数据:', e);
+      console.error('获取测试步骤详情失败，回退使用列表行数据:', e);
     }
     openEditDialog(target);
   }
@@ -384,6 +592,9 @@
   const showEdit = ref(false);
   const saving = ref(false);
   const editingId = ref<number | null>(null);
+  // 详情弹窗状态
+  const detailShow = ref(false);
+  const detailData = ref<any>(null);
 
   // step 操作下拉选项：从关键字管理接口拉取 keyword_name + description
   const actionOptions = ref<
@@ -747,9 +958,8 @@
     editForm.steps.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
   }
 
-  // 保存编辑：一次 POST 聚合提交到 test_action_edit（后端 ActionRequest = name/allure/step/parametrize/validate）
+  // 保存：新增走 POST /api/case_ui/action/，编辑走 PUT /api/case_ui/action/{id}/（后端 ActionRequest = name/allure/step/parametrize/validate）
   async function saveEdit() {
-    if (editingId.value == null) return;
     saving.value = true;
     try {
       // 组装 step 列表（嵌套进 action.step，只提交后端需要的字段）
@@ -791,9 +1001,7 @@
         validate[item.validate_type] = (validate[item.validate_type] || []).concat(mapped);
       }
 
-      // 聚合提交：POST /api/case_ui/action/test_action_edit/
-      await actionAPI.testActionEdit({
-        id: editingId.value,
+      const payload: any = {
         name: editForm.name,
         project_id: editForm.project_id,
         allure: {
@@ -805,28 +1013,49 @@
         step: steps,
         parametrize,
         validate,
-      } as any);
+      };
+
+      // 新增：POST /api/case_ui/action/；编辑：PUT /api/case_ui/action/{id}/
+      if (editingId.value != null) {
+        await actionAPI.updateDataByID(editingId.value, payload);
+      } else {
+        await actionAPI.createData(payload);
+      }
 
       message.success('保存成功');
       showEdit.value = false;
       actionRef.value.reload();
-    } catch (e) {
+    } catch (e: any) {
       console.error('保存失败:', e);
-      message.error('保存失败');
+      // 拦截器已弹出后端错误信息（如"每个parametrize参数长度不一致"），无响应体（如网络错误）时才补兜底提示，避免重复弹窗
+      if (!e?.response?.data) {
+        message.error('保存失败');
+      }
     } finally {
       saving.value = false;
     }
   }
 
+  // 删除：DELETE /api/case_ui/action/{id}/
   function handleDelete(record) {
     console.log(record);
     dialog.info({
       title: '提示',
-      content: `您想删除测试步骤：${record.id}`,
+      content: `确定删除测试步骤：${record.id} 吗？`,
       positiveText: '确定',
       negativeText: '取消',
-      onPositiveClick: () => {
-        message.info(`已点击删除（测试步骤：${record.id}），接口对接后续完善`);
+      onPositiveClick: async () => {
+        try {
+          await actionAPI.deleteDataByID(record.id);
+          message.success('删除成功');
+          actionRef.value.reload();
+        } catch (e: any) {
+          console.error('删除失败:', e);
+          // 拦截器已弹出后端错误信息，无响应体时才补兜底提示，避免重复弹窗
+          if (!e?.response?.data) {
+            message.error('删除失败');
+          }
+        }
       },
       onNegativeClick: () => {},
     });
