@@ -20,76 +20,435 @@
     v-model:show="detailModal.show"
     preset="card"
     title="用例详情"
-    style="width: 760px"
+    style="width: 900px"
     :mask-closable="false"
   >
     <div v-if="detailModal.loading" class="detail-center">加载中...</div>
     <div v-else-if="detailModal.error" class="detail-center">{{ detailModal.error }}</div>
-    <template v-else-if="detailModal.list && detailModal.list.length > 0">
-      <div v-for="(item, index) in detailModal.list" :key="item.id" class="detail-case">
+    <template v-else>
+      <div class="detail-case-name">用例名称：{{ detailModal.caseName || '-' }}</div>
+      <div v-if="detailModal.rows.length === 0" class="detail-center">该用例暂无测试步骤</div>
+      <div
+        v-for="(action, index) in detailModal.rows"
+        :key="action._linkId ?? action.id"
+        class="detail-case"
+      >
         <n-card size="small" :bordered="true">
           <n-space vertical :size="8">
-            <n-space align="center" :size="8">
+            <n-space align="center" :size="16">
               <span class="detail-step-index">测试步骤 {{ index + 1 }}</span>
-              <span>测试步骤名称：{{ item.name }}</span>
-              <span>执行顺序：{{ item.order }}</span>
+              <span>测试步骤名：{{ action.name || '-' }}</span>
+              <span>执行顺序：{{ action._sort }}</span>
+              <n-button size="small" @click="toggleExpand(action)">
+                <template #icon>
+                  <n-icon :component="isExpanded(action) ? UpOutlined : DownOutlined" />
+                </template>
+              </n-button>
             </n-space>
-            <div>
-              Allure 参数：
-              <div v-for="(v, k) in allureFields(item.allure)" :key="k" class="detail-el">
-                {{ k }}：{{ v }}
-              </div>
-              <pre v-if="!allureFields(item.allure)" class="detail-pre">
-                {{ formatJson(item.allure) }}
-              </pre>
+
+            <div v-show="isExpanded(action)">
+            <!-- Allure 参数 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">Allure 参数</span>
+            </n-divider>
+            <div class="ro-row">
+              <div class="ro-label">feature</div>
+              <div class="ro-value">{{ action.allure?.feature || '-' }}</div>
             </div>
-            <div>
-              参数化参数：
-              <pre class="detail-pre">{{ formatJson(item.parametrize) }}</pre>
+            <div class="ro-row">
+              <div class="ro-label">story</div>
+              <div class="ro-value">{{ action.allure?.story || '-' }}</div>
             </div>
-            <div>
-              断言参数：
-              <pre v-if="item.validate && typeof item.validate === 'object'" class="detail-pre">
-                {{ formatValidate(item.validate) }}
-              </pre>
-              <pre v-else class="detail-pre">{{ formatJson(item.validate) }}</pre>
+            <div class="ro-row">
+              <div class="ro-label">title</div>
+              <div class="ro-value">{{ action.allure?.title || '-' }}</div>
             </div>
-            <n-divider title-placement="left" style="margin: 4px 0">页面元素操作顺序</n-divider>
-            <div>
-              <div v-for="(step, stepIndex) in item.step" :key="step.id" class="detail-step-row">
-                <n-space align="center" :size="8">
-                  <span class="detail-step-index">步骤 {{ stepIndex + 1 }}</span>
-                  <span>步骤名称：{{ step.action }}</span>
-                  <span>顺序：{{ step.order }}</span>
-                </n-space>
-                <div class="detail-step-sub">关键字：{{ step.keyword }}</div>
-                <div class="detail-step-sub">
-                  参数：
-                  <pre class="detail-pre">{{ formatArgs(step.args) || '-' }}</pre>
+            <div class="ro-row">
+              <div class="ro-label">description</div>
+              <div class="ro-value">{{ action.allure?.description || '-' }}</div>
+            </div>
+
+            <!-- 操作步骤 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">操作步骤</span>
+            </n-divider>
+            <div class="ro-row" style="align-items: flex-start;">
+              <div class="ro-label">步骤列表</div>
+              <div class="ro-value" style="width: 100%;">
+                <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #666;">
+                  <div style="width: 70px;">序号</div>
+                  <div style="width: 130px;">操作</div>
+                  <div style="width: 130px;">元素</div>
+                  <div style="flex: 1;">参数</div>
                 </div>
-                <div class="detail-step-sub">
-                  关联元素：
-                  <div v-for="el in step.element" :key="el.id" class="detail-el">
-                    元素 id：{{ el.id }} ｜ 定位方式：{{ el.by }} ｜ 定位值：{{ el.locator }}
+                <div
+                  v-for="(s, i) in action.step || []"
+                  :key="i"
+                  style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;"
+                >
+                  <div class="ro-cell" style="width: 70px;">{{ s.sort ?? i + 1 }}</div>
+                  <div class="ro-cell" style="width: 130px;">
+                    {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
                   </div>
-                  <span v-if="!step.element || step.element.length === 0">-</span>
+                  <div class="ro-cell" style="width: 130px;">{{ s.element_id ?? '-' }}</div>
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                    <n-tag
+                      v-for="(p, pi) in s.params || []"
+                      :key="pi"
+                      size="large"
+                      style="align-self: flex-start;"
+                    >
+                      {{ p }}
+                    </n-tag>
+                    <span v-if="!s.params || s.params.length === 0" style="color: #999;">无参数</span>
+                  </div>
+                </div>
+                <span v-if="!action.step || action.step.length === 0" style="color: #999;">-</span>
+              </div>
+            </div>
+
+            <!-- Parametrize 参数 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
+            </n-divider>
+            <div
+              v-for="(values, key) in action.parametrize || {}"
+              :key="key"
+              style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+            >
+              <div style="flex: 1;">
+                <div class="ro-col-title">param_key</div>
+                <div class="ro-cell">{{ key }}</div>
+              </div>
+              <div style="flex: 1;">
+                <div class="ro-col-title">param_value</div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <n-tag
+                    v-for="(v, vi) in values || []"
+                    :key="vi"
+                    size="large"
+                    style="align-self: flex-start;"
+                  >
+                    {{ v }}
+                  </n-tag>
+                  <span v-if="!values || values.length === 0" style="color: #999;">-</span>
                 </div>
               </div>
-              <span v-if="!item.step || item.step.length === 0">-</span>
+            </div>
+            <span
+              v-if="!action.parametrize || Object.keys(action.parametrize).length === 0"
+              style="color: #999;"
+            >
+              -
+            </span>
+
+            <!-- Validate 参数 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
+            </n-divider>
+            <div
+              v-for="(vps, vtype) in action.validate || {}"
+              :key="vtype"
+              style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+            >
+              <div style="flex: 1;">
+                <div class="ro-col-title">validate_type</div>
+                <div class="ro-cell">{{ vtype }}</div>
+              </div>
+              <div style="flex: 1;">
+                <div class="ro-col-title">validate_params</div>
+                <div
+                  v-for="(vp, vpi) in vps || []"
+                  :key="vpi"
+                  style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
+                >
+                  <div style="font-size: 12px; color: #666; margin-bottom: 4px;">expect_result</div>
+                  <div class="ro-cell" style="margin-bottom: 8px;">{{ vp.expect_result ?? '-' }}</div>
+                  <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
+                  <div style="display: flex; gap: 16px; margin-bottom: 6px;">
+                    <div class="ro-cell">
+                      keyword：{{
+                        vp.actual_result?.keyword_id == null
+                          ? '-'
+                          : keywordName(vp.actual_result.keyword_id)
+                      }}
+                    </div>
+                    <div class="ro-cell">element：{{ vp.actual_result?.element_id ?? '-' }}</div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <n-tag
+                      v-for="(p, pi) in vp.actual_result?.params || []"
+                      :key="pi"
+                      size="small"
+                      style="align-self: flex-start;"
+                    >
+                      {{ p }}
+                    </n-tag>
+                    <span
+                      v-if="!vp.actual_result?.params || vp.actual_result.params.length === 0"
+                      style="color: #999;"
+                    >
+                      无参数
+                    </span>
+                  </div>
+                </div>
+                <span v-if="!vps || vps.length === 0" style="color: #999;">-</span>
+              </div>
+            </div>
+            <span
+              v-if="!action.validate || Object.keys(action.validate).length === 0"
+              style="color: #999;"
+            >
+              -
+            </span>
             </div>
           </n-space>
         </n-card>
       </div>
     </template>
   </n-modal>
+
+  <n-modal
+    v-model:show="addModal.show"
+    preset="card"
+    title="新增用例"
+    style="width: 900px"
+    :mask-closable="false"
+  >
+    <n-form label-placement="left" :label-width="100" label-align="left">
+      <n-grid :cols="2" :x-gap="16">
+        <n-form-item-gi label="用例名称" required>
+          <n-input
+            v-model:value="addModal.name"
+            maxlength="64"
+            show-count
+            placeholder="请输入用例名称（最长 64 字）"
+          />
+        </n-form-item-gi>
+        <n-form-item-gi label="所属项目">
+          <n-input :value="`${projectName || ''}（ID：${projectId}）`" disabled />
+        </n-form-item-gi>
+      </n-grid>
+    </n-form>
+
+    <n-divider title-placement="left">测试步骤（{{ addModal.steps.length }}）</n-divider>
+
+    <!-- 添加步骤：从当前项目拥有的 action 中选一条加入本用例 -->
+    <div class="add-step-bar">
+      <n-select
+        v-model:value="addModal.selectedActionId"
+        :options="addModal.actionOptions"
+        placeholder="选择要添加的测试步骤"
+        filterable
+        clearable
+        style="width: 320px"
+      />
+      <n-button type="primary" @click="addActionToNewCase">添加步骤</n-button>
+    </div>
+
+    <div v-if="addModal.steps.length === 0" class="empty-tip">暂无测试步骤</div>
+    <div v-for="(action, index) in addModal.steps" :key="action._tmpId" class="step-card">
+      <n-card size="small" :bordered="true">
+        <n-space vertical :size="8">
+          <n-space align="center" :size="8">
+            <span class="detail-step-index">测试步骤 {{ index + 1 }}</span>
+            <span>执行顺序：</span>
+            <n-input-number
+              v-model:value="action._sort"
+              :min="1"
+              :max="addModal.steps.length"
+              size="small"
+              style="width: 90px"
+              @update:value="onNewOrderChange"
+            />
+            <n-button size="small" @click="toggleNewExpand(action)">
+              <template #icon>
+                <n-icon :component="isNewExpanded(action) ? UpOutlined : DownOutlined" />
+              </template>
+            </n-button>
+            <n-button size="small" type="error" @click="removeNewStep(action)">删除</n-button>
+          </n-space>
+
+          <div class="ro-row">
+            <div class="ro-label">测试步骤名</div>
+            <div class="ro-value">{{ action.name || '-' }}</div>
+          </div>
+
+          <div v-show="isNewExpanded(action)">
+            <!-- Allure 参数 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">Allure 参数</span>
+            </n-divider>
+            <div class="ro-row">
+              <div class="ro-label">feature</div>
+              <div class="ro-value">{{ action.allure?.feature || '-' }}</div>
+            </div>
+            <div class="ro-row">
+              <div class="ro-label">story</div>
+              <div class="ro-value">{{ action.allure?.story || '-' }}</div>
+            </div>
+            <div class="ro-row">
+              <div class="ro-label">title</div>
+              <div class="ro-value">{{ action.allure?.title || '-' }}</div>
+            </div>
+            <div class="ro-row">
+              <div class="ro-label">description</div>
+              <div class="ro-value">{{ action.allure?.description || '-' }}</div>
+            </div>
+
+            <!-- 操作步骤 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">操作步骤</span>
+            </n-divider>
+            <div class="ro-row" style="align-items: flex-start;">
+              <div class="ro-label">步骤列表</div>
+              <div class="ro-value" style="width: 100%;">
+                <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #666;">
+                  <div style="width: 70px;">序号</div>
+                  <div style="width: 130px;">操作</div>
+                  <div style="width: 130px;">元素</div>
+                  <div style="flex: 1;">参数</div>
+                </div>
+                <div
+                  v-for="(s, i) in action.step || []"
+                  :key="i"
+                  style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;"
+                >
+                  <div class="ro-cell" style="width: 70px;">{{ s.sort ?? i + 1 }}</div>
+                  <div class="ro-cell" style="width: 130px;">
+                    {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
+                  </div>
+                  <div class="ro-cell" style="width: 130px;">{{ s.element_id ?? '-' }}</div>
+                  <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                    <n-tag
+                      v-for="(p, pi) in s.params || []"
+                      :key="pi"
+                      size="large"
+                      style="align-self: flex-start;"
+                    >
+                      {{ p }}
+                    </n-tag>
+                    <span v-if="!s.params || s.params.length === 0" style="color: #999;">无参数</span>
+                  </div>
+                </div>
+                <span v-if="!action.step || action.step.length === 0" style="color: #999;">-</span>
+              </div>
+            </div>
+
+            <!-- Parametrize 参数 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
+            </n-divider>
+            <div
+              v-for="(values, key) in action.parametrize || {}"
+              :key="key"
+              style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+            >
+              <div style="flex: 1;">
+                <div class="ro-col-title">param_key</div>
+                <div class="ro-cell">{{ key }}</div>
+              </div>
+              <div style="flex: 1;">
+                <div class="ro-col-title">param_value</div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <n-tag
+                    v-for="(v, vi) in values || []"
+                    :key="vi"
+                    size="large"
+                    style="align-self: flex-start;"
+                  >
+                    {{ v }}
+                  </n-tag>
+                  <span v-if="!values || values.length === 0" style="color: #999;">-</span>
+                </div>
+              </div>
+            </div>
+            <span
+              v-if="!action.parametrize || Object.keys(action.parametrize).length === 0"
+              style="color: #999;"
+            >
+              -
+            </span>
+
+            <!-- Validate 参数 -->
+            <n-divider title-placement="center" style="margin: 8px 0">
+              <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
+            </n-divider>
+            <div
+              v-for="(vps, vtype) in action.validate || {}"
+              :key="vtype"
+              style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+            >
+              <div style="flex: 1;">
+                <div class="ro-col-title">validate_type</div>
+                <div class="ro-cell">{{ vtype }}</div>
+              </div>
+              <div style="flex: 1;">
+                <div class="ro-col-title">validate_params</div>
+                <div
+                  v-for="(vp, vpi) in vps || []"
+                  :key="vpi"
+                  style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
+                >
+                  <div style="font-size: 12px; color: #666; margin-bottom: 4px;">expect_result</div>
+                  <div class="ro-cell" style="margin-bottom: 8px;">{{ vp.expect_result ?? '-' }}</div>
+                  <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
+                  <div style="display: flex; gap: 16px; margin-bottom: 6px;">
+                    <div class="ro-cell">
+                      keyword：{{
+                        vp.actual_result?.keyword_id == null
+                          ? '-'
+                          : keywordName(vp.actual_result.keyword_id)
+                      }}
+                    </div>
+                    <div class="ro-cell">element：{{ vp.actual_result?.element_id ?? '-' }}</div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <n-tag
+                      v-for="(p, pi) in vp.actual_result?.params || []"
+                      :key="pi"
+                      size="small"
+                      style="align-self: flex-start;"
+                    >
+                      {{ p }}
+                    </n-tag>
+                    <span
+                      v-if="!vp.actual_result?.params || vp.actual_result.params.length === 0"
+                      style="color: #999;"
+                    >
+                      无参数
+                    </span>
+                  </div>
+                </div>
+                <span v-if="!vps || vps.length === 0" style="color: #999;">-</span>
+              </div>
+            </div>
+            <span
+              v-if="!action.validate || Object.keys(action.validate).length === 0"
+              style="color: #999;"
+            >
+              -
+            </span>
+          </div>
+        </n-space>
+      </n-card>
+    </div>
+
+    <template #footer>
+      <n-space justify="end">
+        <n-button @click="addModal.show = false">取消</n-button>
+        <n-button type="primary" :loading="addModal.loading" @click="submitAdd">确定</n-button>
+      </n-space>
+    </template>
+  </n-modal>
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref, computed, onMounted, h } from 'vue';
+  import { reactive, ref, computed, onMounted, nextTick, h } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns } from './caseListColumns';
   import { useMessage, useDialog } from 'naive-ui';
-  import { DeleteOutlined, EditOutlined, EyeOutlined } from '@vicons/antd';
+  import { DeleteOutlined, EditOutlined, EyeOutlined, DownOutlined, UpOutlined } from '@vicons/antd';
   import { http } from '@/utils/http/axios';
   import { useRoute, useRouter } from 'vue-router';
 
@@ -174,24 +533,206 @@
     }
   }
 
+  // 关键字 id → 关键字名 映射（详情里步骤的关键字展示）
+  const keywordMap = ref<Record<number, string>>({});
+  function keywordName(id: number | null | undefined): string {
+    if (id == null) return '-';
+    return keywordMap.value[id] ?? String(id);
+  }
+  async function loadKeywords() {
+    try {
+      const res: any = await http.request({
+        url: '/case_ui/keyword/',
+        method: 'get',
+      });
+      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      const map: Record<number, string> = {};
+      for (const k of list) {
+        map[k.id] = k.keyword_name;
+      }
+      keywordMap.value = map;
+    } catch (e) {
+      console.error('加载关键字列表失败:', e);
+    }
+  }
+
   function goBack() {
     router.push({ name: 'case_ui-case' });
   }
 
-  // 增删改仅做界面展示，未对接后端接口
-  function addCase() {
-    message.info('您点击了新增按钮，增删改仅做界面展示，未对接后端接口');
+  // 新增用例弹窗状态
+  const addModal = reactive({
+    show: false,
+    loading: false,
+    name: '',
+    selectedActionId: null as number | null,
+    actionOptions: [] as any[],
+    steps: [] as any[],
+  });
+  // 新增弹窗内可选 action 的完整数据 + 各卡片展开状态
+  const actionCache = ref<any[]>([]);
+  const newExpanded = ref<Record<string, boolean>>({});
+  let newTempSeq = 1;
+
+  function newKey(row: any) {
+    return String(row._tmpId ?? row.id);
+  }
+  function isNewExpanded(row: any) {
+    return !!newExpanded.value[newKey(row)];
+  }
+  function toggleNewExpand(row: any) {
+    const key = newKey(row);
+    newExpanded.value[key] = !newExpanded.value[key];
   }
 
+  // 后端接口返回结构不统一：部分为 { code, message, result }，部分是 DRF 裸结构
+  // 统一取原生响应体后兼容解包，避免全局拦截器把裸结构当成失败
+  async function requestRaw(config: any) {
+    const res: any = await http.request({
+      ...config,
+      meta: { isReturnNativeResponse: true },
+    });
+    if (res && typeof res === 'object' && !Array.isArray(res) && 'code' in res) {
+      const ok = res.code === 0 || res.code === 200 || res.code === 201;
+      if (!ok) throw new Error(res.message || '请求失败');
+      return res.result;
+    }
+    return res;
+  }
+
+  function addCase() {
+    addModal.name = '';
+    addModal.selectedActionId = null;
+    addModal.steps = [];
+    addModal.actionOptions = [];
+    actionCache.value = [];
+    newExpanded.value = {};
+    addModal.show = true;
+    loadActionOptions();
+  }
+
+  // 可选测试步骤：GET /case_ui/action/get_single_action/?project_id=
+  async function loadActionOptions() {
+    try {
+      const res: any = await requestRaw({
+        url: '/case_ui/action/get_single_action/',
+        method: 'get',
+        params: { project_id: projectId },
+      });
+      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      actionCache.value = list;
+      addModal.actionOptions = list.map((a: any) => ({ label: a.name, value: a.id }));
+    } catch (e) {
+      console.error('加载测试步骤列表失败:', e);
+      message.error('加载测试步骤列表失败');
+    }
+  }
+
+  // 相同 action 允许重复添加，顺序按添加后的执行顺序重排
+  function addActionToNewCase() {
+    if (addModal.selectedActionId == null) {
+      message.warning('请选择要添加的测试步骤');
+      return;
+    }
+    const action = actionCache.value.find((a: any) => a.id === addModal.selectedActionId);
+    if (!action) {
+      message.warning('未找到该测试步骤数据');
+      return;
+    }
+    addModal.steps.push({
+      ...action,
+      _tmpId: newTempSeq++,
+      _sort: addModal.steps.length + 1,
+    });
+    addModal.selectedActionId = null;
+  }
+
+  function removeNewStep(row: any) {
+    addModal.steps = addModal.steps.filter((s: any) => s._tmpId !== row._tmpId);
+    addModal.steps.forEach((s: any, i: number) => {
+      s._sort = i + 1;
+    });
+    delete newExpanded.value[newKey(row)];
+  }
+
+  // 调整执行顺序后卡片按 _sort 重排
+  function onNewOrderChange() {
+    nextTick(() => {
+      addModal.steps = addModal.steps
+        .slice()
+        .sort((a: any, b: any) => Number(a._sort) - Number(b._sort));
+    });
+  }
+
+  // 新增用例：先 POST /case_ui/case/ 创建用例，再逐条 POST /case_ui/caseaction/ 绑定步骤
+  async function submitAdd() {
+    const name = addModal.name.trim();
+    if (!name) {
+      message.warning('请输入用例名称');
+      return;
+    }
+    addModal.loading = true;
+    let createdId: number | null = null;
+    try {
+      const created: any = await requestRaw({
+        url: '/case_ui/case/',
+        method: 'post',
+        data: { name, project_id: projectId },
+      });
+      createdId = created?.id ?? null;
+
+      if (addModal.steps.length > 0) {
+        if (!createdId) {
+          throw new Error('用例已创建但未返回 id，测试步骤未添加');
+        }
+        const sorted = addModal.steps
+          .slice()
+          .sort((a: any, b: any) => Number(a._sort) - Number(b._sort));
+        for (let i = 0; i < sorted.length; i++) {
+          await requestRaw({
+            url: '/case_ui/caseaction/',
+            method: 'post',
+            data: { caseui_id: createdId, action_id: sorted[i].id, sort: i + 1 },
+          });
+        }
+      }
+
+      message.success('新增用例成功');
+      addModal.show = false;
+      actionRef.value?.reload?.();
+    } catch (e: any) {
+      console.error('新增用例失败:', e);
+      const msg = e?.message || '新增用例失败';
+      message.error(createdId ? `用例已创建，但测试步骤添加失败：${msg}` : msg);
+      if (createdId) {
+        actionRef.value?.reload?.();
+      }
+    } finally {
+      addModal.loading = false;
+    }
+  }
+
+  // 删除用例：DELETE /api/case_ui/case/{id}/
+  // 后端 CaseUIAction.caseui_id 为 CASCADE，删除用例时会一并删除其步骤关联
   function handleDelete(record) {
-    console.log(record);
-    dialog.info({
-      title: '提示',
-      content: `您想删除${record.name}`,
-      positiveText: '确定',
+    dialog.warning({
+      title: '删除确认',
+      content: `确定删除用例「${record.name}」吗？删除后该用例下的测试步骤关联也会一并删除。`,
+      positiveText: '确定删除',
       negativeText: '取消',
-      onPositiveClick: () => {
-        message.info(`已点击删除（用例：${record.name}），功能仅做界面展示，未对接后端接口`);
+      onPositiveClick: async () => {
+        try {
+          await requestRaw({
+            url: `/case_ui/case/${record.id}/`,
+            method: 'delete',
+          });
+          message.success('删除用例成功');
+          actionRef.value?.reload?.();
+        } catch (e: any) {
+          console.error('删除用例失败:', e);
+          message.error(e?.message || '删除用例失败');
+          throw e;
+        }
       },
       onNegativeClick: () => {},
     });
@@ -210,37 +751,84 @@
   const detailModal = reactive({
     show: false,
     loading: false,
-    list: null as any[] | null,
+    caseName: '',
+    rows: [] as any[],
     error: '',
   });
 
-  // 展示用例详情（只读，不可修改）：逐个展示全部 caseuiinfo，不展示 step
+  // 各步骤卡片详情展开状态（默认收起）
+  const detailExpanded = ref<Record<string, boolean>>({});
+  function detailKey(row: any) {
+    return String(row._linkId ?? row.id);
+  }
+  function isExpanded(row: any) {
+    return !!detailExpanded.value[detailKey(row)];
+  }
+  function toggleExpand(row: any) {
+    const key = detailKey(row);
+    detailExpanded.value[key] = !detailExpanded.value[key];
+  }
+
+  // 展示用例详情（只读）：GET /case_ui/case/{id}/ + GET /case_ui/caseaction/?caseui_id=
+  // 以 caseaction 关联记录驱动，每行对应一个步骤，按 sort 展示执行顺序
   async function handleDetail(record) {
     detailModal.show = true;
     detailModal.loading = true;
-    detailModal.list = null;
+    detailModal.caseName = '';
+    detailModal.rows = [];
     detailModal.error = '';
+    detailExpanded.value = {};
     try {
-      const res: any = await http.request({
-        url: '/case_ui/case_ui_info/get_single_caseuiinfo/',
+      const caseRes: any = await requestRaw({
+        url: `/case_ui/case/${record.id}/`,
         method: 'get',
-        params: { caseui_id: record.id },
       });
-      // 兼容多种返回结构：直接数组 / 分页 list / DRF results / 单对象
-      let list: any[] = [];
-      if (Array.isArray(res)) {
-        list = res;
-      } else if (res?.list && Array.isArray(res.list)) {
-        list = res.list;
-      } else if (res?.results && Array.isArray(res.results)) {
-        list = res.results;
-      } else if (res && typeof res === 'object' && res.id) {
-        list = [res];
+      detailModal.caseName = caseRes?.name ?? record?.name ?? '';
+      const actions: any[] = Array.isArray(caseRes?.action_id) ? caseRes.action_id : [];
+
+      const links: any[] = [];
+      let page = 1;
+      let hasNext = true;
+      while (hasNext) {
+        const res: any = await requestRaw({
+          url: '/case_ui/caseaction/',
+          method: 'get',
+          params: { caseui_id: record.id, page },
+        });
+        const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+        links.push(...list);
+        const more = !!(res?.next || (res?.pageCount && page < res.pageCount));
+        if (!list.length || !more) {
+          hasNext = false;
+        } else {
+          page += 1;
+        }
       }
-      if (!list.length) {
-        detailModal.error = '未获取到用例信息';
+
+      const actionMap: Record<string, any> = {};
+      for (const a of actions) {
+        actionMap[String(a.id)] = a;
+      }
+
+      if (links.length > 0) {
+        detailModal.rows = links
+          .slice()
+          .sort((a, b) => Number(a.sort) - Number(b.sort))
+          .map((link: any) => ({
+            ...(actionMap[String(link.action_id)] || { id: link.action_id }),
+            _linkId: link.id,
+            _sort: link.sort,
+          }));
       } else {
-        detailModal.list = list;
+        detailModal.rows = actions.map((a: any, i: number) => ({
+          ...a,
+          _linkId: null,
+          _sort: i + 1,
+        }));
+      }
+
+      if (detailModal.rows.length === 0) {
+        detailModal.error = '';
       }
     } catch (e) {
       console.error('加载用例详情失败:', e);
@@ -250,121 +838,10 @@
     }
   }
 
-  function formatArgs(args: unknown): string {
-    if (args === null || args === undefined) return '';
-    if (Array.isArray(args)) return args.join('\n');
-    if (typeof args === 'object') {
-      try {
-        return JSON.stringify(args, null, 2);
-      } catch {
-        return String(args);
-      }
-    }
-    return String(args);
-  }
-
-  function formatJson(value: unknown): string {
-    if (value === undefined) return '';
-    try {
-      return JSON.stringify(value, null, 2) ?? '';
-    } catch {
-      return String(value);
-    }
-  }
-
-  // 按对象/数组结构递归拆解为字段级文本（如断言参数的 equals 数组）
-  function formatObject(value: any, depth = 0): string {
-    const pad = '  '.repeat(depth);
-    if (Array.isArray(value)) {
-      if (value.length === 0) return '[]';
-      return value
-        .map((item: any, i: number) => {
-          if (item && typeof item === 'object') {
-            return `${pad}${i + 1}.\n${formatObject(item, depth + 1)}`;
-          }
-          return `${pad}${i + 1}. ${String(item)}`;
-        })
-        .join('\n');
-    }
-    if (value && typeof value === 'object') {
-      return Object.entries(value)
-        .map(([k, v]) => {
-          if (v && typeof v === 'object') {
-            return `${pad}${k}：\n${formatObject(v, depth + 1)}`;
-          }
-          return `${pad}${k}：${String(v)}`;
-        })
-        .join('\n');
-    }
-    return `${pad}${String(value)}`;
-  }
-
-  // 断言值展示：压平为一整条（字段用 ｜ 分隔，数组用、分隔）
-  function formatInline(v: any): string {
-    if (v === null || v === undefined) return 'null';
-    if (Array.isArray(v)) {
-      return v.map((item: any) => formatInline(item)).join('、');
-    }
-    if (typeof v === 'object') {
-      return Object.entries(v)
-        .map(([k, val]) => `${k}：${formatInline(val)}`)
-        .join(' ｜ ');
-    }
-    return String(v);
-  }
-
-  function formatValueLine(v: any): string {
-    return formatInline(v);
-  }
-
-  // validate 展示：第一层键 = 断言类型，值为断言列表（每次断言 = [预期, 实际] 或 {expected_result, actual_result}）
-  function formatValidate(value: any): string {
-    if (value === null || value === undefined) return 'null';
-    if (typeof value !== 'object' || Array.isArray(value)) return formatObject(value);
-    const lines: string[] = [];
-    for (const [type, assertions] of Object.entries(value)) {
-      if (Array.isArray(assertions) && assertions.length > 0) {
-        lines.push(`${type}（共 ${assertions.length} 次断言）`);
-        assertions.forEach((a: any, i: number) => {
-          lines.push(`  第 ${i + 1} 次断言：`);
-          let expected: any;
-          let actual: any;
-          if (Array.isArray(a)) {
-            expected = a[0];
-            actual = a[1];
-          } else if (a && typeof a === 'object') {
-            expected = a.expected_result ?? a.expected;
-            actual = a.actual_result ?? a.actual;
-          } else {
-            expected = a;
-            actual = undefined;
-          }
-          lines.push(`    预期结果：${formatValueLine(expected)}`);
-          lines.push(`    实际结果：${formatValueLine(actual)}`);
-        });
-      } else {
-        lines.push(`${type}：`);
-        lines.push(formatObject(assertions, 1));
-      }
-    }
-    return lines.join('\n');
-  }
-
-  // allure 字段级展开（feature/story/title/description），非标准结构时返回 null 走 JSON 兜底
-  function allureFields(value: any): Record<string, unknown> | null {
-    if (value && typeof value === 'object') {
-      const obj: Record<string, unknown> = {};
-      for (const key of ['feature', 'story', 'title', 'description']) {
-        if (value[key] !== undefined && value[key] !== null) {
-          obj[key] = value[key];
-        }
-      }
-      return Object.keys(obj).length > 0 ? obj : null;
-    }
-    return null;
-  }
-
-  onMounted(loadProjectName);
+  onMounted(() => {
+    loadProjectName();
+    loadKeywords();
+  });
 </script>
 
 <style lang="less" scoped>
@@ -373,39 +850,54 @@
     padding: 24px 0;
     color: #999;
   }
+  .detail-case-name {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
   .detail-case {
     margin-bottom: 10px;
-  }
-  .detail-step-row {
-    margin-bottom: 10px;
-    padding: 6px 0;
-    border-bottom: 1px dashed #eee;
-  }
-  .detail-step-sub {
-    margin-left: 24px;
-    font-size: 13px;
-    color: #666;
-    line-height: 1.6;
   }
   .detail-step-index {
     font-weight: 500;
     color: #18a058;
   }
-  .detail-pre {
-    margin: 0 0 0 24px;
-    white-space: pre-wrap;
-    word-break: break-all;
-    font-size: 12px;
-    font-family: inherit;
+  .ro-row {
+    display: flex;
+    align-items: flex-start;
+    font-size: 14px;
     line-height: 1.6;
   }
-  .detail-el {
-    margin-left: 24px;
-    font-size: 13px;
+  .ro-label {
+    width: 90px;
+    flex-shrink: 0;
     color: #666;
-    line-height: 1.6;
+  }
+  .ro-value {
+    color: #333;
+    word-break: break-all;
+  }
+  .ro-col-title {
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .ro-cell {
+    color: #333;
+    word-break: break-all;
   }
   .mr-1 {
     margin-right: 6px;
+  }
+  .add-step-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .empty-tip {
+    color: #999;
+    padding: 8px 0;
+  }
+  .step-card {
+    margin-bottom: 12px;
   }
 </style>

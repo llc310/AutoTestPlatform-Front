@@ -31,20 +31,44 @@
 
             <n-divider title-placement="left">测试步骤（{{ steps.length }}）</n-divider>
 
+            <!-- 添加步骤：从当前项目拥有的 action 中选一条加入本用例 -->
+            <div class="add-step-bar">
+              <n-select
+                v-model:value="selectedActionId"
+                :options="actionOptions"
+                placeholder="选择要添加的测试步骤"
+                filterable
+                clearable
+                style="width: 320px"
+              />
+              <n-button type="primary" :loading="adding" @click="addActionToCase">
+                添加步骤
+              </n-button>
+            </div>
+
             <div v-if="steps.length === 0" class="empty-tip">暂无测试步骤</div>
-            <div v-for="(action, index) in steps" :key="action.id" class="step-card">
+            <div v-for="(action, index) in steps" :key="action._linkId ?? action.id" class="step-card">
               <n-card size="small" :bordered="true">
                 <n-space vertical :size="8">
                   <n-space align="center" :size="8">
                     <span class="step-index">测试步骤 {{ index + 1 }}</span>
                     <span>执行顺序：</span>
                     <n-input-number
-                      v-model:value="orderValue[String(action.id)]"
+                      v-model:value="orderValue[String(action._linkId ?? action.id)]"
                       :min="1"
                       :max="steps.length"
                       size="small"
                       style="width: 90px"
+                      @update:value="onOrderChange"
                     />
+                    <n-button
+                      size="small"
+                      @click="toggleExpand(action)"
+                    >
+                      <template #icon>
+                        <n-icon :component="isExpanded(action) ? UpOutlined : DownOutlined" />
+                      </template>
+                    </n-button>
                   </n-space>
 
                   <!-- 测试步骤名 -->
@@ -54,6 +78,7 @@
                   </div>
 
                   <!-- Allure 参数 -->
+                  <div v-show="isExpanded(action)">
                   <n-divider title-placement="center" style="margin: 8px 0">
                     <span style="font-size: 14px; font-weight: 600">Allure 参数</span>
                   </n-divider>
@@ -207,6 +232,7 @@
                   >
                     -
                   </span>
+                  </div>
                 </n-space>
               </n-card>
             </div>
@@ -226,10 +252,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, onMounted } from 'vue';
+  import { ref, reactive, onMounted, nextTick } from 'vue';
   import { useMessage } from 'naive-ui';
   import { useRoute, useRouter } from 'vue-router';
   import type { FormRules } from 'naive-ui';
+  import { DownOutlined, UpOutlined } from '@vicons/antd';
   import { http } from '@/utils/http/axios';
   import { KeyWordAPI } from '@/api/case_ui/http';
   import type { ActionSchema } from '@/api/case_ui/models';
@@ -251,13 +278,94 @@
 
   // 测试步骤列表（action 实例，只读展示）
   const steps = ref<ActionSchema[]>([]);
-  // 用例与步骤的关联（caseaction）：action_id → 链接 id / 执行顺序
-  const linkIds = ref<Record<string, number>>({});
+  // 用例与步骤的关联（caseaction）：执行顺序按 link_id 索引
   const orderValue = ref<Record<string, number>>({});
   const originalOrder = ref<Record<string, number>>({});
 
+  // 步骤卡片详情展开状态（默认收起），key 为 _linkId（回退 id）
+  const expanded = ref<Record<string, boolean>>({});
+  function rowKey(row: any) {
+    return String(row._linkId ?? row.id);
+  }
+  function isExpanded(row: any) {
+    return !!expanded.value[rowKey(row)];
+  }
+  function toggleExpand(row: any) {
+    const key = rowKey(row);
+    expanded.value[key] = !expanded.value[key];
+  }
+
+  // 修改执行顺序后，卡片按 sort 自动重排位置
+  function onOrderChange() {
+    nextTick(() => {
+      const sortOf = (row: any) => Number(orderValue.value[rowKey(row)] ?? 0);
+      steps.value = steps.value
+        .slice()
+        .sort((a, b) => sortOf(a) - sortOf(b));
+    });
+  }
+
   // 关键字 id → 关键字名 映射（步骤展示用）
   const keywordMap = ref<Record<number, string>>({});
+
+  // 可添加的 action 列表（当前项目拥有的测试步骤）及选中项
+  const actionOptions = ref<{ label: string; value: number }[]>([]);
+  const selectedActionId = ref<number | null>(null);
+  const adding = ref(false);
+
+  // 加载当前项目拥有的 action（GET /case_ui/action/get_single_action/?project_id=）
+  async function loadActionOptions() {
+    try {
+      const res: any = await http.request({
+        url: '/case_ui/action/get_single_action/',
+        method: 'get',
+        params: { project_id: projectId },
+      });
+      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      actionOptions.value = list.map((a: any) => ({
+        label: a.name || `测试步骤 ${a.id}`,
+        value: Number(a.id),
+      }));
+    } catch (e) {
+      console.error('加载项目测试步骤失败:', e);
+    }
+  }
+
+  // 添加步骤：POST /case_ui/caseaction/ { caseui_id, action_id, sort }
+  async function addActionToCase() {
+    if (selectedActionId.value == null) {
+      message.warning('请先选择要添加的测试步骤');
+      return;
+    }
+    adding.value = true;
+    try {
+      // 同一 action 允许重复添加，只需保证同一用例内 sort 不重复
+      const maxSort = steps.value.reduce(
+        (max, row) => Math.max(max, Number(row._sort ?? orderValue.value[String(row._linkId ?? row.id)] ?? 0)),
+        0
+      );
+      await http.request({
+        url: '/case_ui/caseaction/',
+        method: 'post',
+        data: {
+          caseui_id: caseId,
+          action_id: selectedActionId.value,
+          sort: maxSort + 1,
+        },
+      });
+      message.success('添加成功');
+      selectedActionId.value = null;
+      // 重新加载用例详情（其内部会同时刷新步骤列表与执行顺序）
+      await loadCaseDetail();
+    } catch (e: any) {
+      console.error('添加步骤失败:', e);
+      if (!e?.response?.data) {
+        message.error('添加步骤失败');
+      }
+    } finally {
+      adding.value = false;
+    }
+  }
 
   // 由关键字 id 反查关键字名，查不到时回退显示 id
   function keywordName(id: number | null | undefined): string {
@@ -313,8 +421,8 @@
         method: 'get',
       });
       formValue.name = res.name ?? '';
-      steps.value = Array.isArray(res.action_id) ? res.action_id : [];
-      await loadLinks();
+      const actions = Array.isArray(res.action_id) ? res.action_id : [];
+      await loadSteps(actions);
     } catch (e: any) {
       console.error('加载用例详情失败:', e);
       if (!e?.response?.data) {
@@ -323,11 +431,10 @@
     }
   }
 
-  // 加载本用例的步骤关联（caseaction）：取链接 id 与 sort，供执行顺序编辑
-  async function loadLinks() {
+  // 构建步骤列表：以 caseaction 关联记录为主（同一条 action 可重复出现，每行有独立 link_id 与 sort）
+  async function loadSteps(actions: any[]) {
     try {
-      const ids: Record<string, number> = {};
-      const sorts: Record<string, number> = {};
+      const links: any[] = [];
       let page = 1;
       let pageCount = 1;
       do {
@@ -337,22 +444,37 @@
           params: { caseui_id: caseId, page },
         });
         const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
-        for (const link of list) {
-          const aid = String(link.action_id);
-          ids[aid] = link.id;
-          sorts[aid] = link.sort;
-        }
+        links.push(...list);
         pageCount = res?.pageCount ?? 1;
         if (!list.length) break;
         page += 1;
       } while (page <= pageCount);
 
-      linkIds.value = ids;
+      const actionMap: Record<string, any> = {};
+      for (const a of actions) {
+        actionMap[String(a.id)] = a;
+      }
+
+      let rows: any[];
+      if (links.length > 0) {
+        rows = links
+          .slice()
+          .sort((a, b) => Number(a.sort) - Number(b.sort))
+          .map((link) => ({
+            ...(actionMap[String(link.action_id)] || { id: link.action_id }),
+            _linkId: link.id,
+            _sort: link.sort,
+          }));
+      } else {
+        // 兜底：没有 caseaction 关联时直接展示 action（顺序不可编辑）
+        rows = actions.map((a, i) => ({ ...a, _linkId: null, _sort: i + 1 }));
+      }
+
+      steps.value = rows;
       const orders: Record<string, number> = {};
-      steps.value.forEach((action, index) => {
-        const aid = String(action.id);
-        orders[aid] = sorts[aid] ?? index + 1;
-      });
+      for (const row of rows) {
+        orders[String(row._linkId ?? row.id)] = Number(row._sort) ?? 0;
+      }
       orderValue.value = orders;
       originalOrder.value = { ...orders };
     } catch (e) {
@@ -362,42 +484,44 @@
 
   // 保存执行顺序：先统一挪到临时 sort 再写入目标 sort，避开 (caseui_id, sort) 唯一约束
   async function reorderActions(): Promise<boolean> {
-    const target = steps.value.map((action) => Number(orderValue.value[String(action.id)]));
+    const rows = steps.value;
+    const keyOf = (row: any) => String(row._linkId ?? row.id);
+    const target = rows.map((row) => Number(orderValue.value[keyOf(row)]));
     const duplicated = target.some((v, i) => target.indexOf(v) !== i);
     if (duplicated) {
       message.warning('执行顺序不能重复');
       return false;
     }
 
-    const changed = steps.value
-      .map((action, index) => ({ action, index }))
-      .filter(({ action, index }) => target[index] !== originalOrder.value[String(action.id)]);
+    const changed = rows
+      .map((row, index) => ({ row, index, key: keyOf(row) }))
+      .filter(({ index, key }) => target[index] !== originalOrder.value[key]);
     if (!changed.length) return true;
 
-    const missing = changed.find(({ action }) => linkIds.value[String(action.id)] == null);
+    const missing = changed.find(({ row }) => row._linkId == null);
     if (missing) {
       message.error('缺少步骤关联 id，无法保存执行顺序');
       return false;
     }
 
-    const tempBase = Math.max(...target, steps.value.length) + 1;
+    const tempBase = Math.max(...target, rows.length) + 1;
     try {
       for (const [i, item] of changed.entries()) {
         await http.request({
-          url: `/case_ui/caseaction/${linkIds.value[String(item.action.id)]}/`,
+          url: `/case_ui/caseaction/${item.row._linkId}/`,
           method: 'patch',
           data: { sort: tempBase + i },
         });
       }
       for (const item of changed) {
         await http.request({
-          url: `/case_ui/caseaction/${linkIds.value[String(item.action.id)]}/`,
+          url: `/case_ui/caseaction/${item.row._linkId}/`,
           method: 'patch',
           data: { sort: target[item.index] },
         });
       }
       for (const item of changed) {
-        originalOrder.value[String(item.action.id)] = target[item.index];
+        originalOrder.value[item.key] = target[item.index];
       }
       return true;
     } catch (e: any) {
@@ -446,10 +570,17 @@
     loadProjectName();
     loadKeywords();
     loadCaseDetail();
+    loadActionOptions();
   });
 </script>
 
 <style lang="less" scoped>
+  .add-step-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
   .step-card {
     margin-bottom: 12px;
   }
