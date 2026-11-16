@@ -48,14 +48,13 @@ export interface KeyWordRequest {
 }
 
 // UI 测试用例（接口返回，字段与后端 /api/case_ui/case/ 保持一致）
+// 注意：后端 CaseUI 已删除 action_id 字段，用例与测试步骤的关系由 caseaction 关联表维护
 export interface CaseUI {
   readonly id: number;
   /** UI测试用例名称 */
   name: string;
   /** 项目id */
   project_id: number;
-  /** 关联的测试步骤（action）列表（只读） */
-  action_id: ActionSchema[];
 }
 
 // 创建 / 更新 UI 测试用例的请求体

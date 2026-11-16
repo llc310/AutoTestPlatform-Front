@@ -108,6 +108,7 @@
                     <div class="ro-value" style="width: 100%;">
                       <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #666;">
                         <div style="width: 70px;">序号</div>
+                        <div style="width: 150px;">操作描述</div>
                         <div style="width: 130px;">操作</div>
                         <div style="width: 130px;">元素</div>
                         <div style="flex: 1;">参数</div>
@@ -118,6 +119,7 @@
                         style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;"
                       >
                         <div class="ro-cell" style="width: 70px;">{{ s.sort ?? i + 1 }}</div>
+                        <div class="ro-cell" style="width: 150px;">{{ s.action || '-' }}</div>
                         <div class="ro-cell" style="width: 130px;">
                           {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
                         </div>
@@ -310,18 +312,33 @@
 
   // 可添加的 action 列表（当前项目拥有的测试步骤）及选中项
   const actionOptions = ref<{ label: string; value: number }[]>([]);
+  // 项目 action 完整数据缓存（后端 CaseUI 已不再返回 action_id，需自行按 id 映射）
+  const actionsCache = ref<any[]>([]);
   const selectedActionId = ref<number | null>(null);
   const adding = ref(false);
 
-  // 加载当前项目拥有的 action（GET /case_ui/action/get_single_action/?project_id=）
+  // 加载当前项目拥有的 action（GET /case_ui/action/get_single_action/?project_id=，分页拉全）
   async function loadActionOptions() {
     try {
-      const res: any = await http.request({
-        url: '/case_ui/action/get_single_action/',
-        method: 'get',
-        params: { project_id: projectId },
-      });
-      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      const list: any[] = [];
+      let page = 1;
+      let hasNext = true;
+      while (hasNext) {
+        const res: any = await http.request({
+          url: '/case_ui/action/get_single_action/',
+          method: 'get',
+          params: { project_id: projectId, page },
+        });
+        const pageList = res?.list || res?.results || (Array.isArray(res) ? res : []);
+        list.push(...pageList);
+        const more = !!(res?.next || (res?.pageCount && page < res.pageCount));
+        if (!pageList.length || !more) {
+          hasNext = false;
+        } else {
+          page += 1;
+        }
+      }
+      actionsCache.value = list;
       actionOptions.value = list.map((a: any) => ({
         label: a.name || `测试步骤 ${a.id}`,
         value: Number(a.id),
@@ -421,8 +438,9 @@
         method: 'get',
       });
       formValue.name = res.name ?? '';
-      const actions = Array.isArray(res.action_id) ? res.action_id : [];
-      await loadSteps(actions);
+      // 后端 CaseUI 已删除 action_id 字段，测试步骤数据改从项目 action 列表取
+      await loadActionOptions();
+      await loadSteps(actionsCache.value);
     } catch (e: any) {
       console.error('加载用例详情失败:', e);
       if (!e?.response?.data) {
@@ -466,8 +484,8 @@
             _sort: link.sort,
           }));
       } else {
-        // 兜底：没有 caseaction 关联时直接展示 action（顺序不可编辑）
-        rows = actions.map((a, i) => ({ ...a, _linkId: null, _sort: i + 1 }));
+        // 没有 caseaction 关联记录时，该用例暂无步骤
+        rows = [];
       }
 
       steps.value = rows;

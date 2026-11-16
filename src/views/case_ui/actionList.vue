@@ -21,7 +21,7 @@
       v-model:show="showEdit"
       preset="card"
       :title="editingId ? '编辑测试步骤' : '新增测试步骤'"
-      style="width: 680px"
+      style="width: 820px"
       :bordered="false"
     >
       <n-form :label-width="90" :model="editForm" label-placement="left" label-align="left">
@@ -74,8 +74,14 @@
                 style="width: 70px"
                 @update:value="sortSteps"
               />
-              <n-select
+              <n-input
                 v-model:value="step.action"
+                placeholder="操作描述"
+                :status="step.action && String(step.action).trim() ? undefined : 'error'"
+                style="width: 150px"
+              />
+              <n-select
+                v-model:value="step.keyword"
                 :options="actionOptions"
                 :render-label="renderKeywordLabel"
                 placeholder="操作"
@@ -261,7 +267,7 @@
       v-model:show="detailShow"
       preset="card"
       title="测试步骤详情"
-      style="width: 680px"
+      style="width: 820px"
       :bordered="false"
     >
       <n-form v-if="detailData" :label-width="90" label-placement="left" label-align="left">
@@ -304,9 +310,15 @@
             >
               <n-input-number :value="s.sort ?? idx + 1" disabled style="width: 70px" placeholder="序号" />
               <n-input
+                :value="s.action ?? ''"
+                readonly
+                placeholder="操作描述"
+                style="width: 150px"
+              />
+              <n-input
                 :value="keywordIdToName(s.keyword_id) ?? s.keyword_id ?? ''"
                 readonly
-                placeholder="操作"
+                placeholder="关键字"
                 style="width: 130px"
               />
               <n-input
@@ -767,7 +779,10 @@
           }
           return {
             id: s.id ?? null,
-            action: s.action ?? 'click',
+            // action：操作描述（如"输入用户名"），由用户填写，提交时原样回传
+            action: s.action ?? '',
+            // keyword：关键字下拉的选中值（关键字名），与 keyword_id 对应
+            keyword: keywordIdToName(s.keyword_id),
             params: s.params ? { ...s.params } : {},
             paramsList,
             showParamInput: false,
@@ -785,7 +800,8 @@
   function addStep() {
     editForm.steps.push({
       id: null,
-      action: 'click',
+      action: '',
+      keyword: null,
       params: {},
       paramsList: [],
       showParamInput: false,
@@ -797,8 +813,9 @@
     });
   }
 
-  // 选中关键字后联动设置 keyword_id
+  // 选中关键字后联动：记录下拉值到 keyword，并设置 keyword_id
   function onStepActionChange(step: any, val: string) {
+    step.keyword = val;
     const matched = actionOptions.value.find((o) => o.value === val);
     step.keyword_id = matched ? matched.id : null;
   }
@@ -962,9 +979,19 @@
   async function saveEdit() {
     saving.value = true;
     try {
+      // 步骤行的"操作（action）"为必填项，任一行留空不提交
+      const emptyIdx = editForm.steps.findIndex(
+        (step: any) => !step.action || !String(step.action).trim()
+      );
+      if (emptyIdx !== -1) {
+        message.warning(`请填写第 ${emptyIdx + 1} 个步骤的操作`);
+        return;
+      }
+
       // 组装 step 列表（嵌套进 action.step，只提交后端需要的字段）
       const steps = editForm.steps.map((step) => ({
         sort: step.sort ?? 0,
+        action: String(step.action).trim(),
         keyword_id: step.keyword_id,
         element_id: step.element_id,
         params: step.paramsList && step.paramsList.length ? step.paramsList.map((p: string) => toTypedValue(p)) : [],

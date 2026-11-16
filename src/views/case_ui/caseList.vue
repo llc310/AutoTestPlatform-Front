@@ -77,6 +77,7 @@
               <div class="ro-value" style="width: 100%;">
                 <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #666;">
                   <div style="width: 70px;">序号</div>
+                  <div style="width: 150px;">操作描述</div>
                   <div style="width: 130px;">操作</div>
                   <div style="width: 130px;">元素</div>
                   <div style="flex: 1;">参数</div>
@@ -87,6 +88,7 @@
                   style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;"
                 >
                   <div class="ro-cell" style="width: 70px;">{{ s.sort ?? i + 1 }}</div>
+                  <div class="ro-cell" style="width: 150px;">{{ s.action || '-' }}</div>
                   <div class="ro-cell" style="width: 130px;">
                     {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
                   </div>
@@ -305,6 +307,7 @@
               <div class="ro-value" style="width: 100%;">
                 <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #666;">
                   <div style="width: 70px;">序号</div>
+                  <div style="width: 150px;">操作描述</div>
                   <div style="width: 130px;">操作</div>
                   <div style="width: 130px;">元素</div>
                   <div style="flex: 1;">参数</div>
@@ -315,6 +318,7 @@
                   style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;"
                 >
                   <div class="ro-cell" style="width: 70px;">{{ s.sort ?? i + 1 }}</div>
+                  <div class="ro-cell" style="width: 150px;">{{ s.action || '-' }}</div>
                   <div class="ro-cell" style="width: 130px;">
                     {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
                   </div>
@@ -611,20 +615,35 @@
     loadActionOptions();
   }
 
-  // 可选测试步骤：GET /case_ui/action/get_single_action/?project_id=
+  // 可选测试步骤：GET /case_ui/action/get_single_action/?project_id=（分页拉全）
+  // 后端 CaseUI 已删除 action_id，详情里也复用这份列表按 id 映射测试步骤
   async function loadActionOptions() {
     try {
-      const res: any = await requestRaw({
-        url: '/case_ui/action/get_single_action/',
-        method: 'get',
-        params: { project_id: projectId },
-      });
-      const list = res?.list || res?.results || (Array.isArray(res) ? res : []);
+      const list: any[] = [];
+      let page = 1;
+      let hasNext = true;
+      while (hasNext) {
+        const res: any = await requestRaw({
+          url: '/case_ui/action/get_single_action/',
+          method: 'get',
+          params: { project_id: projectId, page },
+        });
+        const pageList = res?.list || res?.results || (Array.isArray(res) ? res : []);
+        list.push(...pageList);
+        const more = !!(res?.next || (res?.pageCount && page < res.pageCount));
+        if (!pageList.length || !more) {
+          hasNext = false;
+        } else {
+          page += 1;
+        }
+      }
       actionCache.value = list;
       addModal.actionOptions = list.map((a: any) => ({ label: a.name, value: a.id }));
+      return list;
     } catch (e) {
       console.error('加载测试步骤列表失败:', e);
       message.error('加载测试步骤列表失败');
+      return [];
     }
   }
 
@@ -784,7 +803,8 @@
         method: 'get',
       });
       detailModal.caseName = caseRes?.name ?? record?.name ?? '';
-      const actions: any[] = Array.isArray(caseRes?.action_id) ? caseRes.action_id : [];
+      // 后端 CaseUI 已删除 action_id，测试步骤数据改从项目 action 列表按 id 映射
+      const actions: any[] = await loadActionOptions();
 
       const links: any[] = [];
       let page = 1;
@@ -820,11 +840,8 @@
             _sort: link.sort,
           }));
       } else {
-        detailModal.rows = actions.map((a: any, i: number) => ({
-          ...a,
-          _linkId: null,
-          _sort: i + 1,
-        }));
+        // 没有 caseaction 关联记录时，该用例暂无步骤
+        detailModal.rows = [];
       }
 
       if (detailModal.rows.length === 0) {

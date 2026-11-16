@@ -760,7 +760,6 @@ export interface components {
         };
         CaseUI: {
             readonly id: number;
-            readonly action_id: components["schemas"]["Action"][];
             /** UI测试用例名称 */
             name: string;
             /** 项目id */
