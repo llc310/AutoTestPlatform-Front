@@ -105,7 +105,7 @@ export interface Step {
   /** 操作 */
   action: string;
   /** 参数值 */
-  params?: unknown;
+  args?: unknown;
   /** 步骤内执行顺序 */
   sort: number;
   /** 关键字id */

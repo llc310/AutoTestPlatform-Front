@@ -60,12 +60,7 @@
             <div
               v-for="(step, idx) in editForm.steps"
               :key="step.id ?? `new-${idx}`"
-              style="
-                display: flex;
-                gap: 8px;
-                align-items: flex-start;
-                margin-bottom: 8px;
-              "
+              style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px"
             >
               <n-input-number
                 v-model:value="step.sort"
@@ -92,12 +87,12 @@
                 v-model:value="step.element_id"
                 :options="elementOptions"
                 :render-label="renderElementLabel"
-                placeholder="元素"
+                placeholder="请选择"
                 clearable
                 style="width: 130px"
                 @focus="loadElements"
               />
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
                 <n-tag
                   v-for="(p, i) in step.paramsList"
                   :key="i"
@@ -115,13 +110,9 @@
                   @blur="confirmStepParam(step)"
                   autofocus
                 />
-                <n-button v-else dashed @click="step.showParamInput = true">
-                  + 添加参数
-                </n-button>
+                <n-button v-else dashed @click="step.showParamInput = true"> + 添加参数 </n-button>
               </div>
-              <n-button size="small" type="error" ghost @click="removeStep(idx)">
-                删除
-              </n-button>
+              <n-button size="small" type="error" ghost @click="removeStep(idx)"> 删除 </n-button>
             </div>
             <n-button size="small" dashed @click="addStep">+ 添加步骤</n-button>
           </div>
@@ -134,28 +125,44 @@
         <div
           v-for="(item, ki) in editForm.parametrize.items"
           :key="ki"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
         >
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">param_key</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">param_key</div>
             <n-input v-model:value="item.param_key" placeholder="参数化键名" />
           </div>
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">param_value</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">param_value</div>
             <div
               v-for="(v, vi) in item.param_values"
               :key="vi"
-              style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;"
+              style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px"
             >
-              <n-input v-model:value="item.param_values[vi]" placeholder="参数化键值" style="flex: 1" class="pv-input" @blur="removeEmptyParamValue(item, vi)">
+              <n-input
+                v-model:value="item.param_values[vi]"
+                placeholder="参数化键值"
+                style="flex: 1"
+                class="pv-input"
+                @blur="removeEmptyParamValue(item, vi)"
+              >
                 <template v-if="item.param_values[vi]" #suffix>
-                  <n-text style="cursor: pointer; color: #d03050;" @click="item.param_values.splice(vi, 1)">×</n-text>
+                  <n-text
+                    style="cursor: pointer; color: #d03050"
+                    @click="item.param_values.splice(vi, 1)"
+                    >×</n-text
+                  >
                 </template>
               </n-input>
             </div>
             <n-button size="small" dashed @click="item.param_values.push('')">+ 添加值</n-button>
           </div>
-          <n-button size="small" type="error" ghost style="margin-top: 28px;" @click="editForm.parametrize.items.splice(ki, 1)">
+          <n-button
+            size="small"
+            type="error"
+            ghost
+            style="margin-top: 28px"
+            @click="editForm.parametrize.items.splice(ki, 1)"
+          >
             删除键
           </n-button>
         </div>
@@ -168,25 +175,30 @@
         <div
           v-for="(item, vi) in editForm.validate.items"
           :key="vi"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
         >
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">validate_type</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">validate_type</div>
             <n-select
               v-model:value="item.validate_type"
               :options="validateTypeOptionsFor(vi)"
               placeholder="断言类型"
             />
           </div>
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">validate_params</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">validate_params</div>
             <div
               v-for="(vp, vpi) in item.params"
               :key="vpi"
               class="vp-row"
-              style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
+              style="
+                border: 1px solid #e0e0e0;
+                border-radius: 4px;
+                padding: 8px;
+                margin-bottom: 8px;
+              "
             >
-              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <div style="display: flex; gap: 8px; margin-bottom: 8px">
                 <n-input
                   v-model:value="vp.expect_result"
                   placeholder="expect_result 期望值"
@@ -194,32 +206,36 @@
                   style="flex: 1"
                 >
                   <template v-if="vp.expect_result" #suffix>
-                    <n-text style="cursor: pointer; color: #d03050;" @click="item.params.splice(vpi, 1)">×</n-text>
+                    <n-text
+                      style="cursor: pointer; color: #d03050"
+                      @click="item.params.splice(vpi, 1)"
+                      >×</n-text
+                    >
                   </template>
                 </n-input>
               </div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
-              <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+              <div style="font-size: 12px; color: #666; margin-bottom: 4px">actual_result</div>
+              <div style="display: flex; gap: 8px; margin-bottom: 6px">
                 <n-select
                   v-model:value="vp.actual_result.keyword"
                   :options="actionOptions"
                   :render-label="renderKeywordLabel"
                   placeholder="keyword"
                   size="small"
-                  style="flex: 1; min-width: 120px;"
+                  style="flex: 1; min-width: 120px"
                 />
                 <n-select
                   v-model:value="vp.actual_result.element"
                   :options="elementOptions"
                   :render-label="renderElementLabel"
-                  placeholder="element"
+                  placeholder="请选择"
                   size="small"
                   clearable
-                  style="flex: 1; min-width: 120px;"
+                  style="flex: 1; min-width: 120px"
                   @focus="loadElements"
                 />
               </div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; flex-direction: column; gap: 4px">
                 <n-tag
                   v-for="(p, pi) in vp.actual_result.params"
                   :key="pi"
@@ -238,7 +254,9 @@
                   @blur="confirmValidateActualParam(vp)"
                   autofocus
                 />
-                <n-button v-else size="tiny" dashed @click="vp.actual_result._showInput = true">+ 参数</n-button>
+                <n-button v-else size="tiny" dashed @click="vp.actual_result._showInput = true"
+                  >+ 参数</n-button
+                >
               </div>
             </div>
             <n-button size="small" dashed @click="addValidateParam(item)">+ 添加参数</n-button>
@@ -247,7 +265,7 @@
             size="small"
             type="error"
             ghost
-            style="margin-top: 28px;"
+            style="margin-top: 28px"
             @click="editForm.validate.items.splice(vi, 1)"
           >
             删除
@@ -301,14 +319,14 @@
             <div
               v-for="(s, idx) in detailData.step || []"
               :key="idx"
-              style="
-                display: flex;
-                gap: 8px;
-                align-items: flex-start;
-                margin-bottom: 8px;
-              "
+              style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px"
             >
-              <n-input-number :value="s.sort ?? idx + 1" disabled style="width: 70px" placeholder="序号" />
+              <n-input-number
+                :value="s.sort ?? idx + 1"
+                disabled
+                style="width: 70px"
+                placeholder="序号"
+              />
               <n-input
                 :value="s.action ?? ''"
                 readonly
@@ -327,19 +345,21 @@
                 placeholder="元素"
                 style="width: 130px"
               />
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
                 <n-tag
-                  v-for="(p, i) in s.params || []"
+                  v-for="(p, i) in s.args || []"
                   :key="i"
                   size="large"
-                  style="align-self: flex-start;"
+                  style="align-self: flex-start"
                 >
                   {{ p }}
                 </n-tag>
-                <span v-if="!s.params || s.params.length === 0" style="color: #999;">无参数</span>
+                <span v-if="!s.args || s.args.length === 0" style="color: #999">无参数</span>
               </div>
             </div>
-            <span v-if="!detailData.step || detailData.step.length === 0" style="color: #999;">-</span>
+            <span v-if="!detailData.step || detailData.step.length === 0" style="color: #999"
+              >-</span
+            >
           </div>
         </n-form-item>
 
@@ -350,30 +370,30 @@
         <div
           v-for="(values, key) in detailData.parametrize || {}"
           :key="key"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
         >
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">param_key</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">param_key</div>
             <n-input :value="String(key)" readonly placeholder="参数化键名" />
           </div>
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">param_value</div>
-            <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">param_value</div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
               <n-tag
                 v-for="(v, vi) in values || []"
                 :key="vi"
                 size="large"
-                style="align-self: flex-start;"
+                style="align-self: flex-start"
               >
                 {{ v }}
               </n-tag>
-              <span v-if="!values || values.length === 0" style="color: #999;">-</span>
+              <span v-if="!values || values.length === 0" style="color: #999">-</span>
             </div>
           </div>
         </div>
         <span
           v-if="!detailData.parametrize || Object.keys(detailData.parametrize).length === 0"
-          style="color: #999;"
+          style="color: #999"
         >
           -
         </span>
@@ -385,20 +405,25 @@
         <div
           v-for="(vps, vtype) in detailData.validate || {}"
           :key="vtype"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
+          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
         >
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">validate_type</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">validate_type</div>
             <n-input :value="String(vtype)" readonly placeholder="断言类型" />
           </div>
-          <div style="flex: 1;">
-            <div style="margin-bottom: 6px; font-size: 14px;">validate_params</div>
+          <div style="flex: 1">
+            <div style="margin-bottom: 6px; font-size: 14px">validate_params</div>
             <div
               v-for="(vp, vpi) in vps || []"
               :key="vpi"
-              style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
+              style="
+                border: 1px solid #e0e0e0;
+                border-radius: 4px;
+                padding: 8px;
+                margin-bottom: 8px;
+              "
             >
-              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <div style="display: flex; gap: 8px; margin-bottom: 8px">
                 <n-input
                   :value="String(vp.expect_result ?? '')"
                   readonly
@@ -407,51 +432,57 @@
                   style="flex: 1"
                 />
               </div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
-              <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+              <div style="font-size: 12px; color: #666; margin-bottom: 4px">actual_result</div>
+              <div style="display: flex; gap: 8px; margin-bottom: 6px">
                 <n-input
-                  :value="String(keywordIdToName(vp.actual_result?.keyword_id) ?? vp.actual_result?.keyword_id ?? '')"
+                  :value="
+                    String(
+                      keywordIdToName(vp.actual_result?.keyword_id) ??
+                        vp.actual_result?.keyword_id ??
+                        ''
+                    )
+                  "
                   readonly
                   placeholder="keyword"
                   size="small"
-                  style="flex: 1; min-width: 120px;"
+                  style="flex: 1; min-width: 120px"
                 />
                 <n-input
                   :value="String(vp.actual_result?.element_id ?? '')"
                   readonly
                   placeholder="element"
                   size="small"
-                  style="flex: 1; min-width: 120px;"
+                  style="flex: 1; min-width: 120px"
                 />
               </div>
-              <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; flex-direction: column; gap: 4px">
                 <n-tag
-                  v-for="(p, pi) in vp.actual_result?.params || []"
+                  v-for="(p, pi) in vp.actual_result?.args || []"
                   :key="pi"
                   size="small"
-                  style="align-self: flex-start;"
+                  style="align-self: flex-start"
                 >
                   {{ p }}
                 </n-tag>
                 <span
-                  v-if="!vp.actual_result?.params || vp.actual_result.params.length === 0"
-                  style="color: #999;"
+                  v-if="!vp.actual_result?.args || vp.actual_result.args.length === 0"
+                  style="color: #999"
                 >
                   无参数
                 </span>
               </div>
             </div>
-            <span v-if="!vps || vps.length === 0" style="color: #999;">-</span>
+            <span v-if="!vps || vps.length === 0" style="color: #999">-</span>
           </div>
         </div>
         <span
           v-if="!detailData.validate || Object.keys(detailData.validate).length === 0"
-          style="color: #999;"
+          style="color: #999"
         >
           -
         </span>
       </n-form>
-      <div v-else style="display: flex; justify-content: center; padding: 24px 0;">
+      <div v-else style="display: flex; justify-content: center; padding: 24px 0">
         <n-spin />
       </div>
     </n-modal>
@@ -541,9 +572,7 @@
       });
       // 兼容分页对象 {list:[...]} 和直接返回数组两种结构
       const list = Array.isArray(res) ? res : res?.list || res?.results || [];
-      const project = list.find(
-        (item: any) => String(item.id) === String(projectId)
-      );
+      const project = list.find((item: any) => String(item.id) === String(projectId));
       if (project) {
         projectName.value = project.name;
       }
@@ -609,9 +638,9 @@
   const detailData = ref<any>(null);
 
   // step 操作下拉选项：从关键字管理接口拉取 keyword_name + description
-  const actionOptions = ref<
-    { label: string; value: string; id: number; description?: string }[]
-  >([]);
+  const actionOptions = ref<{ label: string; value: string; id: number; description?: string }[]>(
+    []
+  );
 
   async function loadKeywords() {
     try {
@@ -628,7 +657,9 @@
     }
   }
 
-  const elementOptions = ref<{ label: string; value: number; by?: string; path?: string }[]>([]);
+  const elementOptions = ref<{ label: string; value: number | null; by?: string; path?: string }[]>(
+    [{ label: '请选择', value: null, by: '', path: '' }]
+  );
   async function loadElements() {
     try {
       const res: any = await elementAPI.getElement({ project_id: projectId });
@@ -638,12 +669,15 @@
         data = data.result;
       }
       const list = data?.list || data?.results || (Array.isArray(data) ? data : []);
-      elementOptions.value = list.map((el: any) => ({
-        label: el.name,
-        value: el.id,
-        by: el.by || '',
-        path: el.path || '',
-      }));
+      elementOptions.value = [
+        { label: '请选择', value: null, by: '', path: '' },
+        ...list.map((el: any) => ({
+          label: el.name,
+          value: el.id,
+          by: el.by || '',
+          path: el.path || '',
+        })),
+      ];
     } catch (e) {
       console.error('加载元素列表失败:', e);
       message.error('加载元素列表失败');
@@ -652,6 +686,8 @@
 
   // 元素下拉选项：悬停显示 定位方式 + 定位值
   function renderElementLabel(option: any) {
+    // 占位项（请选择）不挂定位 tooltip
+    if (option.value == null) return option.label;
     return h(
       NTooltip,
       { trigger: 'hover' },
@@ -744,7 +780,7 @@
       const values = Array.isArray(v) ? v.map((x: any) => String(x)) : v != null ? [String(v)] : [];
       editForm.parametrize.items.push({ param_key: k, param_values: values });
     }
-    // validate 参数：后端结构为 { validate_type: [{expect_result, actual_result:{keyword_id, element_id, params}}] }
+    // validate 参数：后端结构为 { validate_type: [{expect_result, actual_result:{keyword_id, element_id, args}}] }
     const vd = record.validate || {};
     editForm.validate.id = vd.id ?? null;
     const vItems: any[] = [];
@@ -759,7 +795,7 @@
             // 后端返回 keyword_id，下拉 value 是关键字名，需要反查名称才能选中显示
             keyword: keywordIdToName(p?.actual_result?.keyword_id),
             element: p?.actual_result?.element_id ?? null,
-            params: Array.isArray(p?.actual_result?.params) ? p.actual_result.params : [],
+            params: Array.isArray(p?.actual_result?.args) ? p.actual_result.args : [],
             _showInput: false,
             _newParam: '',
           },
@@ -772,10 +808,10 @@
       ? record.step.map((s: any, i: number) => {
           // 兼容旧结构 {value:"xxx"} 和新结构数组 ["xxx","yyy"]
           let paramsList: string[] = [];
-          if (Array.isArray(s.params)) {
-            paramsList = s.params;
-          } else if (s.params && s.params.value != null) {
-            paramsList = [String(s.params.value)];
+          if (Array.isArray(s.args)) {
+            paramsList = s.args;
+          } else if (s.args && s.args.value != null) {
+            paramsList = [String(s.args.value)];
           }
           return {
             id: s.id ?? null,
@@ -783,7 +819,7 @@
             action: s.action ?? '',
             // keyword：关键字下拉的选中值（关键字名），与 keyword_id 对应
             keyword: keywordIdToName(s.keyword_id),
-            params: s.params ? { ...s.params } : {},
+            params: s.args ? { ...s.args } : {},
             paramsList,
             showParamInput: false,
             newParam: '',
@@ -833,10 +869,10 @@
   // 参数类型转换：'123' 带引号 → 字符串 "123"；纯数字 → int/float；其余 → 原样字符串
   function toTypedValue(v: any): string | number {
     const s = String(v ?? '');
-    if (/^'.*'$/.test(s)) return s.slice(1, -1);       // 引号包裹 → 强制字符串
-    if (/^-?\d+$/.test(s)) return parseInt(s, 10);    // 整数
+    if (/^'.*'$/.test(s)) return s.slice(1, -1); // 引号包裹 → 强制字符串
+    if (/^-?\d+$/.test(s)) return parseInt(s, 10); // 整数
     if (/^-?\d+\.\d+$/.test(s)) return parseFloat(s); // 浮点
-    return s;                                          // 普通字符串
+    return s; // 普通字符串
   }
 
   // 参数 tag 输入：按空格生成块
@@ -876,7 +912,9 @@
     const inPopup = !!(
       t &&
       t.closest &&
-      t.closest('.n-base-select-menu, .n-base-select-option, .n-popover, .n-dropdown, .n-select-menu')
+      t.closest(
+        '.n-base-select-menu, .n-base-select-option, .n-popover, .n-dropdown, .n-select-menu'
+      )
     );
     // 1) Parametrize：点击不在参数值输入框内 → 移除所有空参数值行
     if (!(t && t.closest && t.closest('.pv-input')) && !inPopup) {
@@ -988,14 +1026,24 @@
         return;
       }
 
-      // 组装 step 列表（嵌套进 action.step，只提交后端需要的字段）
-      const steps = editForm.steps.map((step) => ({
-        sort: step.sort ?? 0,
-        action: String(step.action).trim(),
-        keyword_id: step.keyword_id,
-        element_id: step.element_id,
-        params: step.paramsList && step.paramsList.length ? step.paramsList.map((p: string) => toTypedValue(p)) : [],
-      }));
+      // 组装 step 列表（嵌套进 action.step，只提交后端需要的字段；element_id/args 为空则不传）
+      const steps = editForm.steps.map((step) => {
+        const item: any = {
+          sort: step.sort ?? 0,
+          action: String(step.action).trim(),
+          keyword_id: step.keyword_id,
+        };
+        // element_id 可空：未选元素不传
+        if (step.element_id != null) {
+          item.element_id = step.element_id;
+        }
+        // args（原 params）可空：无参数不传
+        const args = (step.paramsList || []).map((p: string) => toTypedValue(p));
+        if (args.length) {
+          item.args = args;
+        }
+        return item;
+      });
 
       // parametrize：后端结构为 { key: [value...] }，把 items 组装成映射（空时传 {}）
       const parametrize: any = {};
@@ -1017,14 +1065,24 @@
       const validate: any = {};
       for (const item of editForm.validate.items) {
         if (!item.validate_type) continue;
-        const mapped = item.params.map((p: any) => ({
-          expect_result: p.expect_result,
-          actual_result: {
+        const mapped = item.params.map((p: any) => {
+          const actual: any = {
             keyword_id: keywordNameToId(p.actual_result.keyword),
-            element_id: p.actual_result.element,
-            params: p.actual_result.params.map((v: string) => toTypedValue(v)),
-          },
-        }));
+          };
+          // element_id 可空：未选元素不传
+          if (p.actual_result.element != null) {
+            actual.element_id = p.actual_result.element;
+          }
+          // args（原 params）可空：无参数不传
+          const args = (p.actual_result.params || []).map((v: string) => toTypedValue(v));
+          if (args.length) {
+            actual.args = args;
+          }
+          return {
+            expect_result: p.expect_result,
+            actual_result: actual,
+          };
+        });
         validate[item.validate_type] = (validate[item.validate_type] || []).concat(mapped);
       }
 

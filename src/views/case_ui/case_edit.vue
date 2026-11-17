@@ -47,7 +47,11 @@
             </div>
 
             <div v-if="steps.length === 0" class="empty-tip">暂无测试步骤</div>
-            <div v-for="(action, index) in steps" :key="action._linkId ?? action.id" class="step-card">
+            <div
+              v-for="(action, index) in steps"
+              :key="action._linkId ?? action.id"
+              class="step-card"
+            >
               <n-card size="small" :bordered="true">
                 <n-space vertical :size="8">
                   <n-space align="center" :size="8">
@@ -61,10 +65,7 @@
                       style="width: 90px"
                       @update:value="onOrderChange"
                     />
-                    <n-button
-                      size="small"
-                      @click="toggleExpand(action)"
-                    >
+                    <n-button size="small" @click="toggleExpand(action)">
                       <template #icon>
                         <n-icon :component="isExpanded(action) ? UpOutlined : DownOutlined" />
                       </template>
@@ -79,161 +80,191 @@
 
                   <!-- Allure 参数 -->
                   <div v-show="isExpanded(action)">
-                  <n-divider title-placement="center" style="margin: 8px 0">
-                    <span style="font-size: 14px; font-weight: 600">Allure 参数</span>
-                  </n-divider>
-                  <div class="ro-row">
-                    <div class="ro-label">feature</div>
-                    <div class="ro-value">{{ action.allure?.feature || '-' }}</div>
-                  </div>
-                  <div class="ro-row">
-                    <div class="ro-label">story</div>
-                    <div class="ro-value">{{ action.allure?.story || '-' }}</div>
-                  </div>
-                  <div class="ro-row">
-                    <div class="ro-label">title</div>
-                    <div class="ro-value">{{ action.allure?.title || '-' }}</div>
-                  </div>
-                  <div class="ro-row">
-                    <div class="ro-label">description</div>
-                    <div class="ro-value">{{ action.allure?.description || '-' }}</div>
-                  </div>
-
-                  <!-- 操作步骤 -->
-                  <n-divider title-placement="center" style="margin: 8px 0">
-                    <span style="font-size: 14px; font-weight: 600">操作步骤</span>
-                  </n-divider>
-                  <div class="ro-row" style="align-items: flex-start;">
-                    <div class="ro-label">步骤列表</div>
-                    <div class="ro-value" style="width: 100%;">
-                      <div style="display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; color: #666;">
-                        <div style="width: 70px;">序号</div>
-                        <div style="width: 150px;">操作描述</div>
-                        <div style="width: 130px;">操作</div>
-                        <div style="width: 130px;">元素</div>
-                        <div style="flex: 1;">参数</div>
-                      </div>
-                      <div
-                        v-for="(s, i) in action.step || []"
-                        :key="i"
-                        style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;"
-                      >
-                        <div class="ro-cell" style="width: 70px;">{{ s.sort ?? i + 1 }}</div>
-                        <div class="ro-cell" style="width: 150px;">{{ s.action || '-' }}</div>
-                        <div class="ro-cell" style="width: 130px;">
-                          {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
-                        </div>
-                        <div class="ro-cell" style="width: 130px;">{{ s.element_id ?? '-' }}</div>
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                          <n-tag
-                            v-for="(p, pi) in s.params || []"
-                            :key="pi"
-                            size="large"
-                            style="align-self: flex-start;"
-                          >
-                            {{ p }}
-                          </n-tag>
-                          <span v-if="!s.params || s.params.length === 0" style="color: #999;">无参数</span>
-                        </div>
-                      </div>
-                      <span v-if="!action.step || action.step.length === 0" style="color: #999;">-</span>
+                    <n-divider title-placement="center" style="margin: 8px 0">
+                      <span style="font-size: 14px; font-weight: 600">Allure 参数</span>
+                    </n-divider>
+                    <div class="ro-row">
+                      <div class="ro-label">feature</div>
+                      <div class="ro-value">{{ action.allure?.feature || '-' }}</div>
                     </div>
-                  </div>
-
-                  <!-- Parametrize 参数 -->
-                  <n-divider title-placement="center" style="margin: 8px 0">
-                    <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
-                  </n-divider>
-                  <div
-                    v-for="(values, key) in action.parametrize || {}"
-                    :key="key"
-                    style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
-                  >
-                    <div style="flex: 1;">
-                      <div class="ro-col-title">param_key</div>
-                      <div class="ro-cell">{{ key }}</div>
+                    <div class="ro-row">
+                      <div class="ro-label">story</div>
+                      <div class="ro-value">{{ action.allure?.story || '-' }}</div>
                     </div>
-                    <div style="flex: 1;">
-                      <div class="ro-col-title">param_value</div>
-                      <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <n-tag
-                          v-for="(v, vi) in values || []"
-                          :key="vi"
-                          size="large"
-                          style="align-self: flex-start;"
+                    <div class="ro-row">
+                      <div class="ro-label">title</div>
+                      <div class="ro-value">{{ action.allure?.title || '-' }}</div>
+                    </div>
+                    <div class="ro-row">
+                      <div class="ro-label">description</div>
+                      <div class="ro-value">{{ action.allure?.description || '-' }}</div>
+                    </div>
+
+                    <!-- 操作步骤 -->
+                    <n-divider title-placement="center" style="margin: 8px 0">
+                      <span style="font-size: 14px; font-weight: 600">操作步骤</span>
+                    </n-divider>
+                    <div class="ro-row" style="align-items: flex-start">
+                      <div class="ro-label">步骤列表</div>
+                      <div class="ro-value" style="width: 100%">
+                        <div
+                          style="
+                            display: flex;
+                            gap: 8px;
+                            margin-bottom: 6px;
+                            font-size: 13px;
+                            color: #666;
+                          "
                         >
-                          {{ v }}
-                        </n-tag>
-                        <span v-if="!values || values.length === 0" style="color: #999;">-</span>
-                      </div>
-                    </div>
-                  </div>
-                  <span
-                    v-if="!action.parametrize || Object.keys(action.parametrize).length === 0"
-                    style="color: #999;"
-                  >
-                    -
-                  </span>
-
-                  <!-- Validate 参数 -->
-                  <n-divider title-placement="center" style="margin: 8px 0">
-                    <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
-                  </n-divider>
-                  <div
-                    v-for="(vps, vtype) in action.validate || {}"
-                    :key="vtype"
-                    style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;"
-                  >
-                    <div style="flex: 1;">
-                      <div class="ro-col-title">validate_type</div>
-                      <div class="ro-cell">{{ vtype }}</div>
-                    </div>
-                    <div style="flex: 1;">
-                      <div class="ro-col-title">validate_params</div>
-                      <div
-                        v-for="(vp, vpi) in vps || []"
-                        :key="vpi"
-                        style="border: 1px solid #e0e0e0; border-radius: 4px; padding: 8px; margin-bottom: 8px;"
-                      >
-                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">expect_result</div>
-                        <div class="ro-cell" style="margin-bottom: 8px;">{{ vp.expect_result ?? '-' }}</div>
-                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">actual_result</div>
-                        <div style="display: flex; gap: 16px; margin-bottom: 6px;">
-                          <div class="ro-cell">
-                            keyword：{{
-                              vp.actual_result?.keyword_id == null
-                                ? '-'
-                                : keywordName(vp.actual_result.keyword_id)
-                            }}
+                          <div style="width: 70px">序号</div>
+                          <div style="width: 150px">操作描述</div>
+                          <div style="width: 130px">操作</div>
+                          <div style="width: 130px">元素</div>
+                          <div style="flex: 1">参数</div>
+                        </div>
+                        <div
+                          v-for="(s, i) in action.step || []"
+                          :key="i"
+                          style="
+                            display: flex;
+                            gap: 8px;
+                            align-items: flex-start;
+                            margin-bottom: 8px;
+                          "
+                        >
+                          <div class="ro-cell" style="width: 70px">{{ s.sort ?? i + 1 }}</div>
+                          <div class="ro-cell" style="width: 150px">{{ s.action || '-' }}</div>
+                          <div class="ro-cell" style="width: 130px">
+                            {{ s.keyword_id == null ? '-' : keywordName(s.keyword_id) }}
                           </div>
-                          <div class="ro-cell">element：{{ vp.actual_result?.element_id ?? '-' }}</div>
+                          <div class="ro-cell" style="width: 130px">{{ s.element_id ?? '-' }}</div>
+                          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+                            <n-tag
+                              v-for="(p, pi) in s.args || []"
+                              :key="pi"
+                              size="large"
+                              style="align-self: flex-start"
+                            >
+                              {{ p }}
+                            </n-tag>
+                            <span v-if="!s.args || s.args.length === 0" style="color: #999"
+                              >无参数</span
+                            >
+                          </div>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <span v-if="!action.step || action.step.length === 0" style="color: #999"
+                          >-</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Parametrize 参数 -->
+                    <n-divider title-placement="center" style="margin: 8px 0">
+                      <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
+                    </n-divider>
+                    <div
+                      v-for="(values, key) in action.parametrize || {}"
+                      :key="key"
+                      style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
+                    >
+                      <div style="flex: 1">
+                        <div class="ro-col-title">param_key</div>
+                        <div class="ro-cell">{{ key }}</div>
+                      </div>
+                      <div style="flex: 1">
+                        <div class="ro-col-title">param_value</div>
+                        <div style="display: flex; flex-direction: column; gap: 4px">
                           <n-tag
-                            v-for="(p, pi) in vp.actual_result?.params || []"
-                            :key="pi"
-                            size="small"
-                            style="align-self: flex-start;"
+                            v-for="(v, vi) in values || []"
+                            :key="vi"
+                            size="large"
+                            style="align-self: flex-start"
                           >
-                            {{ p }}
+                            {{ v }}
                           </n-tag>
-                          <span
-                            v-if="!vp.actual_result?.params || vp.actual_result.params.length === 0"
-                            style="color: #999;"
-                          >
-                            无参数
-                          </span>
+                          <span v-if="!values || values.length === 0" style="color: #999">-</span>
                         </div>
                       </div>
-                      <span v-if="!vps || vps.length === 0" style="color: #999;">-</span>
                     </div>
-                  </div>
-                  <span
-                    v-if="!action.validate || Object.keys(action.validate).length === 0"
-                    style="color: #999;"
-                  >
-                    -
-                  </span>
+                    <span
+                      v-if="!action.parametrize || Object.keys(action.parametrize).length === 0"
+                      style="color: #999"
+                    >
+                      -
+                    </span>
+
+                    <!-- Validate 参数 -->
+                    <n-divider title-placement="center" style="margin: 8px 0">
+                      <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
+                    </n-divider>
+                    <div
+                      v-for="(vps, vtype) in action.validate || {}"
+                      :key="vtype"
+                      style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
+                    >
+                      <div style="flex: 1">
+                        <div class="ro-col-title">validate_type</div>
+                        <div class="ro-cell">{{ vtype }}</div>
+                      </div>
+                      <div style="flex: 1">
+                        <div class="ro-col-title">validate_params</div>
+                        <div
+                          v-for="(vp, vpi) in vps || []"
+                          :key="vpi"
+                          style="
+                            border: 1px solid #e0e0e0;
+                            border-radius: 4px;
+                            padding: 8px;
+                            margin-bottom: 8px;
+                          "
+                        >
+                          <div style="font-size: 12px; color: #666; margin-bottom: 4px"
+                            >expect_result</div
+                          >
+                          <div class="ro-cell" style="margin-bottom: 8px">{{
+                            vp.expect_result ?? '-'
+                          }}</div>
+                          <div style="font-size: 12px; color: #666; margin-bottom: 4px"
+                            >actual_result</div
+                          >
+                          <div style="display: flex; gap: 16px; margin-bottom: 6px">
+                            <div class="ro-cell">
+                              keyword：{{
+                                vp.actual_result?.keyword_id == null
+                                  ? '-'
+                                  : keywordName(vp.actual_result.keyword_id)
+                              }}
+                            </div>
+                            <div class="ro-cell"
+                              >element：{{ vp.actual_result?.element_id ?? '-' }}</div
+                            >
+                          </div>
+                          <div style="display: flex; flex-direction: column; gap: 4px">
+                            <n-tag
+                              v-for="(p, pi) in vp.actual_result?.args || []"
+                              :key="pi"
+                              size="small"
+                              style="align-self: flex-start"
+                            >
+                              {{ p }}
+                            </n-tag>
+                            <span
+                              v-if="!vp.actual_result?.args || vp.actual_result.args.length === 0"
+                              style="color: #999"
+                            >
+                              无参数
+                            </span>
+                          </div>
+                        </div>
+                        <span v-if="!vps || vps.length === 0" style="color: #999">-</span>
+                      </div>
+                    </div>
+                    <span
+                      v-if="!action.validate || Object.keys(action.validate).length === 0"
+                      style="color: #999"
+                    >
+                      -
+                    </span>
                   </div>
                 </n-space>
               </n-card>
@@ -301,9 +332,7 @@
   function onOrderChange() {
     nextTick(() => {
       const sortOf = (row: any) => Number(orderValue.value[rowKey(row)] ?? 0);
-      steps.value = steps.value
-        .slice()
-        .sort((a, b) => sortOf(a) - sortOf(b));
+      steps.value = steps.value.slice().sort((a, b) => sortOf(a) - sortOf(b));
     });
   }
 
@@ -358,7 +387,8 @@
     try {
       // 同一 action 允许重复添加，只需保证同一用例内 sort 不重复
       const maxSort = steps.value.reduce(
-        (max, row) => Math.max(max, Number(row._sort ?? orderValue.value[String(row._linkId ?? row.id)] ?? 0)),
+        (max, row) =>
+          Math.max(max, Number(row._sort ?? orderValue.value[String(row._linkId ?? row.id)] ?? 0)),
         0
       );
       await http.request({
