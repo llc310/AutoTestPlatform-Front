@@ -57,221 +57,51 @@
         </n-divider>
         <n-form-item label="步骤列表">
           <div style="width: 100%">
-            <div
-              v-for="(step, idx) in editForm.steps"
-              :key="step.id ?? `new-${idx}`"
-              style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px"
+            <Draggable
+              v-model="editForm.steps"
+              item-key="uid"
+              handle=".step-drag-handle"
+              animation="200"
             >
-              <n-input-number
-                v-model:value="step.sort"
-                :min="0"
-                placeholder="序号"
-                style="width: 70px"
-                @update:value="sortSteps"
-              />
-              <n-input
-                v-model:value="step.action"
-                placeholder="操作描述"
-                :status="step.action && String(step.action).trim() ? undefined : 'error'"
-                style="width: 150px"
-              />
-              <n-select
-                v-model:value="step.keyword"
-                :options="actionOptions"
-                :render-label="renderKeywordLabel"
-                placeholder="操作"
-                style="width: 130px"
-                @update:value="(val: string) => onStepActionChange(step, val)"
-              />
-              <n-select
-                v-model:value="step.element_id"
-                :options="elementOptions"
-                :render-label="renderElementLabel"
-                placeholder="请选择"
-                clearable
-                style="width: 130px"
-                @focus="loadElements"
-              />
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
-                <n-tag
-                  v-for="(p, i) in step.paramsList"
-                  :key="i"
-                  closable
-                  size="large"
-                  @close="step.paramsList.splice(i, 1)"
-                >
-                  {{ p }}
-                </n-tag>
-                <n-input
-                  v-if="step.showParamInput"
-                  v-model:value="step.newParam"
-                  placeholder="输入参数后回车"
-                  @keydown.enter="confirmStepParam(step)"
-                  @blur="confirmStepParam(step)"
-                  autofocus
-                />
-                <n-button v-else dashed @click="step.showParamInput = true"> + 添加参数 </n-button>
-              </div>
-              <n-button size="small" type="error" ghost @click="removeStep(idx)"> 删除 </n-button>
-            </div>
+              <template #item="{ element: step, index: idx }">
+                <div style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px">
+                  <span class="step-drag-handle" style="cursor: move" title="拖拽排序">
+                    <n-icon size="16">
+                      <DragOutlined />
+                    </n-icon>
+                  </span>
+                  <n-input
+                    v-model:value="step.action"
+                    placeholder="操作描述"
+                    :status="step.action && String(step.action).trim() ? undefined : 'error'"
+                    style="width: 150px"
+                  />
+                  <n-select
+                    v-model:value="step.keyword"
+                    :options="actionOptions"
+                    :render-label="renderKeywordLabel"
+                    placeholder="操作"
+                    style="width: 130px"
+                    @update:value="(val: string) => onStepActionChange(step, val)"
+                  />
+                  <n-select
+                    v-model:value="step.element_id"
+                    :options="elementOptions"
+                    :render-label="renderElementLabel"
+                    placeholder="请选择"
+                    clearable
+                    style="width: 130px"
+                    @focus="loadElements"
+                  />
+                  <n-button size="small" type="error" ghost @click="removeStep(idx)">
+                    删除
+                  </n-button>
+                </div>
+              </template>
+            </Draggable>
             <n-button size="small" dashed @click="addStep">+ 添加步骤</n-button>
           </div>
         </n-form-item>
-
-        <!-- Parametrize 参数 -->
-        <n-divider title-placement="center" style="margin: 8px 0">
-          <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
-        </n-divider>
-        <div
-          v-for="(item, ki) in editForm.parametrize.items"
-          :key="ki"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
-        >
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">param_key</div>
-            <n-input v-model:value="item.param_key" placeholder="参数化键名" />
-          </div>
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">param_value</div>
-            <div
-              v-for="(v, vi) in item.param_values"
-              :key="vi"
-              style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px"
-            >
-              <n-input
-                v-model:value="item.param_values[vi]"
-                placeholder="参数化键值"
-                style="flex: 1"
-                class="pv-input"
-                @blur="removeEmptyParamValue(item, vi)"
-              >
-                <template v-if="item.param_values[vi]" #suffix>
-                  <n-text
-                    style="cursor: pointer; color: #d03050"
-                    @click="item.param_values.splice(vi, 1)"
-                    >×</n-text
-                  >
-                </template>
-              </n-input>
-            </div>
-            <n-button size="small" dashed @click="item.param_values.push('')">+ 添加值</n-button>
-          </div>
-          <n-button
-            size="small"
-            type="error"
-            ghost
-            style="margin-top: 28px"
-            @click="editForm.parametrize.items.splice(ki, 1)"
-          >
-            删除键
-          </n-button>
-        </div>
-        <n-button size="small" dashed @click="addParamKey">+ 添加键</n-button>
-
-        <!-- Validate 参数 -->
-        <n-divider title-placement="center" style="margin: 8px 0">
-          <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
-        </n-divider>
-        <div
-          v-for="(item, vi) in editForm.validate.items"
-          :key="vi"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
-        >
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">validate_type</div>
-            <n-select
-              v-model:value="item.validate_type"
-              :options="validateTypeOptionsFor(vi)"
-              placeholder="断言类型"
-            />
-          </div>
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">validate_params</div>
-            <div
-              v-for="(vp, vpi) in item.params"
-              :key="vpi"
-              class="vp-row"
-              style="
-                border: 1px solid #e0e0e0;
-                border-radius: 4px;
-                padding: 8px;
-                margin-bottom: 8px;
-              "
-            >
-              <div style="display: flex; gap: 8px; margin-bottom: 8px">
-                <n-input
-                  v-model:value="vp.expect_result"
-                  placeholder="expect_result 期望值"
-                  size="small"
-                  style="flex: 1"
-                >
-                  <template v-if="vp.expect_result" #suffix>
-                    <n-text
-                      style="cursor: pointer; color: #d03050"
-                      @click="item.params.splice(vpi, 1)"
-                      >×</n-text
-                    >
-                  </template>
-                </n-input>
-              </div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 4px">actual_result</div>
-              <div style="display: flex; gap: 8px; margin-bottom: 6px">
-                <n-select
-                  v-model:value="vp.actual_result.keyword"
-                  :options="actionOptions"
-                  :render-label="renderKeywordLabel"
-                  placeholder="keyword"
-                  size="small"
-                  style="flex: 1; min-width: 120px"
-                />
-                <n-select
-                  v-model:value="vp.actual_result.element"
-                  :options="elementOptions"
-                  :render-label="renderElementLabel"
-                  placeholder="请选择"
-                  size="small"
-                  clearable
-                  style="flex: 1; min-width: 120px"
-                  @focus="loadElements"
-                />
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 4px">
-                <n-tag
-                  v-for="(p, pi) in vp.actual_result.params"
-                  :key="pi"
-                  closable
-                  size="small"
-                  @close="vp.actual_result.params.splice(pi, 1)"
-                >
-                  {{ p }}
-                </n-tag>
-                <n-input
-                  v-if="vp.actual_result._showInput"
-                  v-model:value="vp.actual_result._newParam"
-                  size="small"
-                  placeholder="输入参数后回车"
-                  @keydown.enter="confirmValidateActualParam(vp)"
-                  @blur="confirmValidateActualParam(vp)"
-                  autofocus
-                />
-                <n-button v-else size="tiny" dashed @click="vp.actual_result._showInput = true"
-                  >+ 参数</n-button
-                >
-              </div>
-            </div>
-            <n-button size="small" dashed @click="addValidateParam(item)">+ 添加参数</n-button>
-          </div>
-          <n-button
-            size="small"
-            type="error"
-            ghost
-            style="margin-top: 28px"
-            @click="editForm.validate.items.splice(vi, 1)"
-          >
-            删除
-          </n-button>
-        </div>
-        <n-button size="small" dashed @click="addValidateItem">+ 添加断言</n-button>
 
         <n-space justify="end">
           <n-button @click="showEdit = false">取消</n-button>
@@ -321,12 +151,6 @@
               :key="idx"
               style="display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px"
             >
-              <n-input-number
-                :value="s.sort ?? idx + 1"
-                disabled
-                style="width: 70px"
-                placeholder="序号"
-              />
               <n-input
                 :value="s.action ?? ''"
                 readonly
@@ -339,148 +163,31 @@
                 placeholder="关键字"
                 style="width: 130px"
               />
+              <n-tooltip v-if="elementIdToOption(s.element_id)" trigger="hover">
+                <template #trigger>
+                  <n-input
+                    :value="elementIdToName(s.element_id) ?? ''"
+                    readonly
+                    placeholder="元素"
+                    style="width: 130px"
+                  />
+                </template>
+                定位方式: {{ elementIdToOption(s.element_id)?.by || '-' }}，定位值:
+                {{ elementIdToOption(s.element_id)?.path || '-' }}
+              </n-tooltip>
               <n-input
+                v-else
                 :value="String(s.element_id ?? '')"
                 readonly
                 placeholder="元素"
                 style="width: 130px"
               />
-              <div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
-                <n-tag
-                  v-for="(p, i) in s.args || []"
-                  :key="i"
-                  size="large"
-                  style="align-self: flex-start"
-                >
-                  {{ p }}
-                </n-tag>
-                <span v-if="!s.args || s.args.length === 0" style="color: #999">无参数</span>
-              </div>
             </div>
             <span v-if="!detailData.step || detailData.step.length === 0" style="color: #999"
               >-</span
             >
           </div>
         </n-form-item>
-
-        <!-- Parametrize 参数（与编辑界面一致） -->
-        <n-divider title-placement="center" style="margin: 8px 0">
-          <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
-        </n-divider>
-        <div
-          v-for="(values, key) in detailData.parametrize || {}"
-          :key="key"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
-        >
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">param_key</div>
-            <n-input :value="String(key)" readonly placeholder="参数化键名" />
-          </div>
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">param_value</div>
-            <div style="display: flex; flex-direction: column; gap: 4px">
-              <n-tag
-                v-for="(v, vi) in values || []"
-                :key="vi"
-                size="large"
-                style="align-self: flex-start"
-              >
-                {{ v }}
-              </n-tag>
-              <span v-if="!values || values.length === 0" style="color: #999">-</span>
-            </div>
-          </div>
-        </div>
-        <span
-          v-if="!detailData.parametrize || Object.keys(detailData.parametrize).length === 0"
-          style="color: #999"
-        >
-          -
-        </span>
-
-        <!-- Validate 参数（与编辑界面一致） -->
-        <n-divider title-placement="center" style="margin: 8px 0">
-          <span style="font-size: 14px; font-weight: 600">Validate 参数</span>
-        </n-divider>
-        <div
-          v-for="(vps, vtype) in detailData.validate || {}"
-          :key="vtype"
-          style="display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start"
-        >
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">validate_type</div>
-            <n-input :value="String(vtype)" readonly placeholder="断言类型" />
-          </div>
-          <div style="flex: 1">
-            <div style="margin-bottom: 6px; font-size: 14px">validate_params</div>
-            <div
-              v-for="(vp, vpi) in vps || []"
-              :key="vpi"
-              style="
-                border: 1px solid #e0e0e0;
-                border-radius: 4px;
-                padding: 8px;
-                margin-bottom: 8px;
-              "
-            >
-              <div style="display: flex; gap: 8px; margin-bottom: 8px">
-                <n-input
-                  :value="String(vp.expect_result ?? '')"
-                  readonly
-                  placeholder="expect_result 期望值"
-                  size="small"
-                  style="flex: 1"
-                />
-              </div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 4px">actual_result</div>
-              <div style="display: flex; gap: 8px; margin-bottom: 6px">
-                <n-input
-                  :value="
-                    String(
-                      keywordIdToName(vp.actual_result?.keyword_id) ??
-                        vp.actual_result?.keyword_id ??
-                        ''
-                    )
-                  "
-                  readonly
-                  placeholder="keyword"
-                  size="small"
-                  style="flex: 1; min-width: 120px"
-                />
-                <n-input
-                  :value="String(vp.actual_result?.element_id ?? '')"
-                  readonly
-                  placeholder="element"
-                  size="small"
-                  style="flex: 1; min-width: 120px"
-                />
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 4px">
-                <n-tag
-                  v-for="(p, pi) in vp.actual_result?.args || []"
-                  :key="pi"
-                  size="small"
-                  style="align-self: flex-start"
-                >
-                  {{ p }}
-                </n-tag>
-                <span
-                  v-if="!vp.actual_result?.args || vp.actual_result.args.length === 0"
-                  style="color: #999"
-                >
-                  无参数
-                </span>
-              </div>
-            </div>
-            <span v-if="!vps || vps.length === 0" style="color: #999">-</span>
-          </div>
-        </div>
-        <span
-          v-if="!detailData.validate || Object.keys(detailData.validate).length === 0"
-          style="color: #999"
-        >
-          -
-        </span>
       </n-form>
       <div v-else style="display: flex; justify-content: center; padding: 24px 0">
         <n-spin />
@@ -490,11 +197,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref, computed, onMounted, onBeforeUnmount, h } from 'vue';
+  import { reactive, ref, computed, onMounted, h } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns } from './actionListColumns';
   import { useMessage, useDialog, NTooltip, NSelect } from 'naive-ui';
-  import { DeleteOutlined, EditOutlined, EyeOutlined } from '@vicons/antd';
+  import { DeleteOutlined, EditOutlined, EyeOutlined, DragOutlined } from '@vicons/antd';
+  import Draggable from 'vuedraggable';
   import { http } from '@/utils/http/axios';
   import { ActionAPI, KeyWordAPI, ElementAPI } from '@/api/case_ui/http';
   import { useRoute, useRouter } from 'vue-router';
@@ -595,10 +303,6 @@
     editForm.allure.story = '';
     editForm.allure.title = '';
     editForm.allure.description = '';
-    editForm.parametrize.id = null;
-    editForm.parametrize.items = [];
-    editForm.validate.id = null;
-    editForm.validate.items = [];
     editForm.steps = [];
     showEdit.value = true;
   }
@@ -732,29 +436,14 @@
     project_id: projectId,
     steps: [] as any[],
     allure: { id: null as number | null, feature: '', story: '', title: '', description: '' },
-    parametrize: {
-      id: null as number | null,
-      items: [] as { param_key: string; param_values: string[] }[],
-    },
-    validate: {
-      id: null as number | null,
-      items: [] as {
-        validate_type: string | null;
-        params: {
-          expect_result: string;
-          actual_result: { keyword: string | null; element: number | null; params: string[] };
-        }[];
-      }[],
-    },
   });
 
-  // 断言类型选项（对应后端 ValidateTypeEnum）
-  const validateTypeOptions = [
-    { label: 'equals', value: 'equals' },
-    { label: 'contains', value: 'contains' },
-    { label: 'db_equals', value: 'db_equals' },
-    { label: 'db_contains', value: 'db_contains' },
-  ];
+  // 步骤行稳定 uid（拖拽排序按 uid 绑定 key）
+  let stepUidSeq = 0;
+  function nextStepUid() {
+    stepUidSeq += 1;
+    return `s_${Date.now()}_${stepUidSeq}`;
+  }
 
   function openEditDialog(record) {
     editingId.value = record.id ?? null;
@@ -771,59 +460,16 @@
     editForm.allure.story = al.story ?? '';
     editForm.allure.title = al.title ?? '';
     editForm.allure.description = al.description ?? '';
-    // parametrize 参数：后端为 { key: [value...] } 映射结构，每个 key 生成一组 items
-    const pm = record.parametrize || {};
-    editForm.parametrize.id = pm.id ?? null;
-    editForm.parametrize.items = [];
-    for (const [k, v] of Object.entries(pm)) {
-      if (k === 'id') continue;
-      const values = Array.isArray(v) ? v.map((x: any) => String(x)) : v != null ? [String(v)] : [];
-      editForm.parametrize.items.push({ param_key: k, param_values: values });
-    }
-    // validate 参数：后端结构为 { validate_type: [{expect_result, actual_result:{keyword_id, element_id, args}}] }
-    const vd = record.validate || {};
-    editForm.validate.id = vd.id ?? null;
-    const vItems: any[] = [];
-    for (const [type, params] of Object.entries(vd)) {
-      if (type === 'id') continue;
-      const arr = Array.isArray(params) ? params : params ? [params] : [];
-      vItems.push({
-        validate_type: type,
-        params: arr.map((p: any) => ({
-          expect_result: p?.expect_result ?? '',
-          actual_result: {
-            // 后端返回 keyword_id，下拉 value 是关键字名，需要反查名称才能选中显示
-            keyword: keywordIdToName(p?.actual_result?.keyword_id),
-            element: p?.actual_result?.element_id ?? null,
-            params: Array.isArray(p?.actual_result?.args) ? p.actual_result.args : [],
-            _showInput: false,
-            _newParam: '',
-          },
-        })),
-      });
-    }
-    editForm.validate.items = vItems;
     // 深拷贝 step（后端已聚合进 Action.step），保留 id/keyword_id/element_id 等字段原样回传
     editForm.steps = Array.isArray(record.step)
-      ? record.step.map((s: any, i: number) => {
-          // 兼容旧结构 {value:"xxx"} 和新结构数组 ["xxx","yyy"]
-          let paramsList: string[] = [];
-          if (Array.isArray(s.args)) {
-            paramsList = s.args;
-          } else if (s.args && s.args.value != null) {
-            paramsList = [String(s.args.value)];
-          }
+      ? record.step.map((s: any) => {
           return {
+            uid: nextStepUid(),
             id: s.id ?? null,
             // action：操作描述（如"输入用户名"），由用户填写，提交时原样回传
             action: s.action ?? '',
             // keyword：关键字下拉的选中值（关键字名），与 keyword_id 对应
             keyword: keywordIdToName(s.keyword_id),
-            params: s.args ? { ...s.args } : {},
-            paramsList,
-            showParamInput: false,
-            newParam: '',
-            sort: s.sort ?? i + 1,
             keyword_id: s.keyword_id ?? null,
             element_id: s.element_id ?? null,
             action_id: s.action_id ?? record.id ?? null,
@@ -835,14 +481,10 @@
 
   function addStep() {
     editForm.steps.push({
+      uid: nextStepUid(),
       id: null,
       action: '',
       keyword: null,
-      params: {},
-      paramsList: [],
-      showParamInput: false,
-      newParam: '',
-      sort: editForm.steps.length + 1,
       keyword_id: null,
       element_id: null,
       action_id: editingId.value,
@@ -861,159 +503,24 @@
     const opt = actionOptions.value.find((o) => String(o.id) === String(id));
     return opt ? opt.label : null;
   }
-  function keywordNameToId(name: any): number | null {
-    const opt = actionOptions.value.find((o) => o.value === name);
-    return opt ? opt.id : null;
-  }
 
-  // 参数类型转换：'123' 带引号 → 字符串 "123"；纯数字 → int/float；其余 → 原样字符串
-  function toTypedValue(v: any): string | number {
-    const s = String(v ?? '');
-    if (/^'.*'$/.test(s)) return s.slice(1, -1); // 引号包裹 → 强制字符串
-    if (/^-?\d+$/.test(s)) return parseInt(s, 10); // 整数
-    if (/^-?\d+\.\d+$/.test(s)) return parseFloat(s); // 浮点
-    return s; // 普通字符串
+  // element_id → 元素选项（name/by/path），供详情弹窗按 id 反查名称与定位信息
+  function elementIdToOption(id: any) {
+    if (id == null) return null;
+    return (
+      elementOptions.value.find((o) => o.value != null && String(o.value) === String(id)) || null
+    );
   }
-
-  // 参数 tag 输入：按空格生成块
-  function handleParamKeydown(e: KeyboardEvent, step: any) {
-    if (e.code === 'Space') {
-      e.preventDefault();
-      const input = e.target as HTMLInputElement;
-      const val = (input.value || '').trim();
-      if (val && !step.paramsList.includes(val)) {
-        step.paramsList.push(val);
-      }
-      input.value = '';
-    }
+  function elementIdToName(id: any): string | null {
+    const opt = elementIdToOption(id);
+    return opt ? opt.label : null;
   }
 
   function removeStep(idx: number) {
     editForm.steps.splice(idx, 1);
   }
 
-  // parametrize：添加新的 key-value 组
-  function addParamKey() {
-    editForm.parametrize.items.push({ param_key: '', param_values: [''] });
-  }
-
-  // parametrize：空值输入框失焦自动移除该行（空行无 × 删除符，避免无法删除）
-  function removeEmptyParamValue(item: any, vi: number) {
-    if (!(item.param_values[vi] || '').trim()) {
-      item.param_values.splice(vi, 1);
-    }
-  }
-
-  // 页面级点击：点击不在输入框内的任何地方时，移除空参数行/空输入框
-  // 用捕获阶段（先于按钮 click 触发，如 + 添加值），避免删掉刚新增的空行
-  function onDocClick(e: MouseEvent) {
-    const t = e.target as HTMLElement | null;
-    // 点击在各类下拉弹层内（如关键字/元素/类型下拉的选项）不清理，避免打断选择
-    const inPopup = !!(
-      t &&
-      t.closest &&
-      t.closest(
-        '.n-base-select-menu, .n-base-select-option, .n-popover, .n-dropdown, .n-select-menu'
-      )
-    );
-    // 1) Parametrize：点击不在参数值输入框内 → 移除所有空参数值行
-    if (!(t && t.closest && t.closest('.pv-input')) && !inPopup) {
-      for (const item of editForm.parametrize.items) {
-        for (let i = item.param_values.length - 1; i >= 0; i--) {
-          if (!(item.param_values[i] || '').trim()) {
-            item.param_values.splice(i, 1);
-          }
-        }
-      }
-    }
-    // 2) Validate：点击不在参数行内 → 移除完全为空的参数行、关闭空的 + 参数小输入框
-    if (!(t && t.closest && t.closest('.vp-row')) && !inPopup) {
-      for (const item of editForm.validate.items) {
-        for (let i = item.params.length - 1; i >= 0; i--) {
-          const vp = item.params[i];
-          if (!vp) continue;
-          const actualEmpty =
-            !vp.actual_result ||
-            (!vp.actual_result.keyword &&
-              vp.actual_result.element == null &&
-              (!vp.actual_result.params || vp.actual_result.params.length === 0));
-          if (!(vp.expect_result || '').trim() && actualEmpty) {
-            item.params.splice(i, 1);
-            continue;
-          }
-          // 参数行有内容但 + 参数小输入框为空 → 关闭小输入框
-          if (
-            vp.actual_result &&
-            vp.actual_result._showInput &&
-            !(vp.actual_result._newParam || '').trim()
-          ) {
-            vp.actual_result._showInput = false;
-            vp.actual_result._newParam = '';
-          }
-        }
-      }
-    }
-  }
-
-  // 操作步骤参数：回车确认添加
-  function confirmStepParam(step: any) {
-    const val = (step.newParam || '').trim();
-    if (val) {
-      step.paramsList.push(val);
-    }
-    step.newParam = '';
-    step.showParamInput = false;
-  }
-
-  // validate：添加一组断言
-  function addValidateItem() {
-    editForm.validate.items.push({
-      validate_type: null,
-      params: [],
-    });
-  }
-
-  // validate：某组断言的可选类型——其他组已选过的类型置灰不可再选（每类型只能用一次）
-  function validateTypeOptionsFor(vi: number) {
-    const used = new Set<string>();
-    editForm.validate.items.forEach((it: any, i: number) => {
-      if (i !== vi && it.validate_type) used.add(it.validate_type);
-    });
-    return validateTypeOptions.map((o) => ({
-      ...o,
-      disabled: used.has(o.value as string),
-    }));
-  }
-
-  // validate：在某组断言下添加一个 validate_param
-  function addValidateParam(item: any) {
-    item.params.push({
-      expect_result: '',
-      actual_result: { keyword: null, element: null, params: [], _showInput: false, _newParam: '' },
-    });
-  }
-
-  // validate：actual_result.params 回车确认
-  function confirmValidateActualParam(vp: any) {
-    const val = (vp.actual_result._newParam || '').trim();
-    if (val) {
-      vp.actual_result.params.push(val);
-    }
-    vp.actual_result._newParam = '';
-    vp.actual_result._showInput = false;
-  }
-
-  // 修改 order 后按执行顺序重排行，允许不连续但不允许重复
-  function sortSteps() {
-    const sorts = editForm.steps.map((s) => s.sort);
-    const hasDuplicate = sorts.some((o, i) => sorts.indexOf(o) !== i);
-    if (hasDuplicate) {
-      message.warning('步骤序号重复，请调整为不重复的值');
-    }
-    editForm.steps.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
-  }
-
-  // 保存：新增走 POST /api/case_ui/action/，编辑走 PUT /api/case_ui/action/{id}/（后端 ActionRequest = name/allure/step/parametrize/validate）
+  // 保存：新增走 POST /api/case_ui/action/，编辑走 PUT /api/case_ui/action/{id}/（后端 ActionRequest = name/allure/step）
   async function saveEdit() {
     saving.value = true;
     try {
@@ -1026,10 +533,9 @@
         return;
       }
 
-      // 组装 step 列表（嵌套进 action.step，只提交后端需要的字段；element_id/args 为空则不传）
+      // 按当前数组位置组装 step 列表（顺序由拖拽后的数组位置体现，不传 sort；element_id 为空则不传）
       const steps = editForm.steps.map((step) => {
         const item: any = {
-          sort: step.sort ?? 0,
           action: String(step.action).trim(),
           keyword_id: step.keyword_id,
         };
@@ -1037,54 +543,8 @@
         if (step.element_id != null) {
           item.element_id = step.element_id;
         }
-        // args（原 params）可空：无参数不传
-        const args = (step.paramsList || []).map((p: string) => toTypedValue(p));
-        if (args.length) {
-          item.args = args;
-        }
         return item;
       });
-
-      // parametrize：后端结构为 { key: [value...] }，把 items 组装成映射（空时传 {}）
-      const parametrize: any = {};
-      for (const item of editForm.parametrize.items) {
-        if (!item.param_key) continue;
-        const values = item.param_values
-          .filter((v: string) => v !== '')
-          .map((v: string) => toTypedValue(v));
-        // 同一 key 出现多次时追加合并，避免覆盖
-        if (parametrize[item.param_key]) {
-          parametrize[item.param_key] = parametrize[item.param_key].concat(values);
-        } else {
-          parametrize[item.param_key] = values;
-        }
-      }
-
-      // validate：后端结构为 { validate_type: [params] }，空时传 {}
-      // 注意：同一 validate_type 可能出现多组（用户选了类型后还能再加），按类型合并 params
-      const validate: any = {};
-      for (const item of editForm.validate.items) {
-        if (!item.validate_type) continue;
-        const mapped = item.params.map((p: any) => {
-          const actual: any = {
-            keyword_id: keywordNameToId(p.actual_result.keyword),
-          };
-          // element_id 可空：未选元素不传
-          if (p.actual_result.element != null) {
-            actual.element_id = p.actual_result.element;
-          }
-          // args（原 params）可空：无参数不传
-          const args = (p.actual_result.params || []).map((v: string) => toTypedValue(v));
-          if (args.length) {
-            actual.args = args;
-          }
-          return {
-            expect_result: p.expect_result,
-            actual_result: actual,
-          };
-        });
-        validate[item.validate_type] = (validate[item.validate_type] || []).concat(mapped);
-      }
 
       const payload: any = {
         name: editForm.name,
@@ -1096,8 +556,6 @@
           description: editForm.allure.description,
         },
         step: steps,
-        parametrize,
-        validate,
       };
 
       // 新增：POST /api/case_ui/action/；编辑：PUT /api/case_ui/action/{id}/
@@ -1112,7 +570,7 @@
       actionRef.value.reload();
     } catch (e: any) {
       console.error('保存失败:', e);
-      // 拦截器已弹出后端错误信息（如"每个parametrize参数长度不一致"），无响应体（如网络错误）时才补兜底提示，避免重复弹窗
+      // 拦截器已弹出后端错误信息，无响应体（如网络错误）时才补兜底提示，避免重复弹窗
       if (!e?.response?.data) {
         message.error('保存失败');
       }
@@ -1150,11 +608,6 @@
     loadProjectName();
     loadKeywords();
     loadElements();
-    document.addEventListener('click', onDocClick, true);
-  });
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', onDocClick, true);
   });
 </script>
 

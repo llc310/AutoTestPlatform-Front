@@ -50,6 +50,31 @@ service.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+// 从后端错误体中提取可读错误信息：兼容统一包装 { message }、DRF { detail }、{ non_field_errors }、字段错误数组
+function extractErrorMessage(data: any): string {
+  if (!data) return '';
+  if (typeof data === 'string') return data;
+
+  const flatArray = (arr: any): string =>
+    (Array.isArray(arr) ? arr : [])
+      .map((x) => (x && typeof x === 'object' ? JSON.stringify(x) : String(x)))
+      .filter(Boolean)
+      .join('; ');
+
+  if (data.message)
+    return Array.isArray(data.message) ? flatArray(data.message) : String(data.message);
+  if (data.detail) return Array.isArray(data.detail) ? flatArray(data.detail) : String(data.detail);
+  if (data.non_field_errors) return flatArray(data.non_field_errors);
+  // 统一包装下 DRF 原始错误可能放在 result 里
+  if (data.result) return extractErrorMessage(data.result);
+  // 字段级错误：取第一个非空字段的错误
+  for (const v of Object.values(data)) {
+    if (Array.isArray(v) && v.length) return flatArray(v);
+    if (typeof v === 'string' && v) return v;
+  }
+  return '';
+}
+
 // 响应拦截器：按 { code, message, result } 结构解包
 service.interceptors.response.use(
   (response: AxiosResponse): any => {
@@ -101,12 +126,11 @@ service.interceptors.response.use(
     return Promise.reject(new Error(message));
   },
   (error) => {
-    // 从后端统一响应中提取错误信息并提示（HTTP 非 2xx 时 body 为 { code, message, result }）
+    // 从后端统一响应/DRF 错误体中提取错误信息并提示（HTTP 非 2xx）
     const data = error?.response?.data;
-    if (data && typeof data === 'object') {
-      // @ts-ignore
-      window.$message?.error(data.message || '请求失败');
-    }
+    const msg = extractErrorMessage(data) || error?.message || '请求失败';
+    // @ts-ignore
+    window.$message?.error(msg);
     return Promise.reject(error);
   }
 );
