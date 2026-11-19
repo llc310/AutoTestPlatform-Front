@@ -1,36 +1,71 @@
 <template>
-  <div class="flex flex-col justify-center page-container">
-    <div class="text-center">
-      <img src="~@/assets/images/exception/404.svg" alt="" />
-    </div>
-    <div class="text-center">
-      <h1 class="text-base text-gray-500">抱歉，你访问的页面不存在</h1>
-      <n-button type="info" @click="goHome">回到首页</n-button>
-    </div>
-  </div>
+  <n-card :bordered="false" class="proCard">
+    <BasicTable
+      title="套件管理"
+      titleTooltip="展示当前用户的项目信息（id / 项目名称 / 项目描述 / BaseURL）"
+      :columns="columns"
+      :request="loadDataTable"
+      :row-key="(row) => row.id"
+      ref="actionRef"
+      :actionColumn="actionColumn"
+      :scroll-x="1000"
+    />
+  </n-card>
 </template>
+
 <script lang="ts" setup>
+  import { reactive, ref, h } from 'vue';
+  import { BasicTable, TableAction } from '@/components/Table';
+  import { columns } from './suiteColumns';
+  import { EditOutlined } from '@vicons/antd';
+  import { http } from '@/utils/http/axios';
   import { useRouter } from 'vue-router';
+
   const router = useRouter();
-  function goHome() {
-    router.push('/');
+  const actionRef = ref();
+
+  const params = reactive({
+    pageSize: 10,
+  });
+
+  const actionColumn = reactive({
+    width: 180,
+    title: '操作',
+    key: 'action',
+    fixed: 'right',
+    align: 'center',
+    render(record) {
+      return h(TableAction as any, {
+        style: 'button',
+        actions: createActions(record),
+      });
+    },
+  });
+
+  function createActions(record) {
+    return [
+      {
+        label: '编辑',
+        icon: EditOutlined,
+        onClick: handleEdit.bind(null, record),
+      },
+    ];
+  }
+
+  // 列表数据：获取当前用户的项目
+  // 返回结构 { itemCount, pageCount, list }，与 BasicTable 分页字段约定一致
+  const loadDataTable = async (res) => {
+    return await http.request({
+      url: '/project/project/get_single_user_project/',
+      method: 'get',
+      params: { ...params, ...res },
+    });
+  };
+
+  // 编辑：进入该项目的套件显示界面
+  function handleEdit(record) {
+    router.push({ name: 'suite-suite_list', params: { id: record.id } });
   }
 </script>
-<style lang="less" scoped>
-  .page-container {
-    width: 100%;
-    border-radius: 4px;
-    padding: 50px 0;
-    height: 100vh;
-    .text-center {
-      h1 {
-        color: #666;
-        padding: 20px 0;
-      }
-    }
-    img {
-      width: 350px;
-      margin: 0 auto;
-    }
-  }
-</style>
+
+<style lang="less" scoped></style>

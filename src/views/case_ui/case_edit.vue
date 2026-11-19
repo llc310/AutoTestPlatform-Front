@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="n-layout-page-header">
-      <n-card :bordered="false" title="修改用例" />
+      <n-card :bordered="false" :title="isEdit ? '修改用例' : '新增用例'" />
     </div>
     <n-card :bordered="false" class="mt-4 proCard" style="margin-top: -40px">
       <n-grid cols="1 s:1 m:3 l:3 xl:3 2xl:3" responsive="screen">
@@ -124,6 +124,7 @@
                             <div style="width: 130px">操作</div>
                             <div style="width: 150px">定位方式</div>
                             <div style="flex: 1">定位值</div>
+                            <div style="flex: 1">参数</div>
                             <div style="width: 60px">操作</div>
                           </div>
                           <Draggable
@@ -173,15 +174,41 @@
                                   filterable
                                   clearable
                                   placeholder="选择元素"
-                                  style="flex: 1"
+                                  style="flex: 1 1 0; min-width: 0"
                                   @update:value="(val: number) => onPickElement(s, val)"
                                 />
                                 <n-input
                                   v-else
                                   v-model:value="s.locatorPath"
                                   placeholder="定位值"
-                                  style="flex: 1"
+                                  style="flex: 1 1 0; min-width: 0"
                                 />
+                                <div class="step-args">
+                                  <n-tag
+                                    v-for="(p, ai) in s.argsList"
+                                    :key="ai"
+                                    size="small"
+                                    closable
+                                    class="arg-tag"
+                                    title="点击修改"
+                                    @click="startEditArg(s, ai)"
+                                    @close="s.argsList.splice(ai, 1)"
+                                  >
+                                    {{ p }}
+                                  </n-tag>
+                                  <n-input
+                                    v-if="s.showArgInput"
+                                    v-model:value="s.newArg"
+                                    style="width: 150px"
+                                    placeholder="输入后回车"
+                                    @keydown.enter="confirmArg(s)"
+                                    @blur="confirmArg(s)"
+                                    autofocus
+                                  />
+                                  <n-button v-else dashed @click="s.showArgInput = true">
+                                    + 添加参数
+                                  </n-button>
+                                </div>
                                 <n-button
                                   size="small"
                                   type="error"
@@ -202,66 +229,76 @@
                         <n-divider title-placement="center" style="margin: 8px 0">
                           <span style="font-size: 14px; font-weight: 600">Parametrize 参数</span>
                         </n-divider>
-                        <div
-                          v-for="(row, pi) in action.paramRows"
-                          :key="pi"
-                          style="
-                            display: flex;
-                            gap: 12px;
-                            margin-bottom: 12px;
-                            align-items: flex-start;
-                          "
+                        <Draggable
+                          v-model="action.paramRows"
+                          item-key="uid"
+                          handle=".param-row-handle"
+                          animation="200"
+                          class="param-row-list"
                         >
-                          <div style="flex: 1">
-                            <div class="ro-col-title">param_key</div>
-                            <n-input v-model:value="row.key" placeholder="参数名" />
-                          </div>
-                          <div style="flex: 2">
-                            <div class="ro-col-title"
-                              >param_value（纯数字按数字类型，加引号按字符串）</div
-                            >
+                          <template #item="{ element: row, index: pi }">
                             <div
-                              style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center"
+                              class="param-row"
+                              style="
+                                display: flex;
+                                gap: 12px;
+                                margin-bottom: 12px;
+                                align-items: flex-start;
+                              "
                             >
-                              <n-tag
-                                v-for="(v, vi) in row.valueList"
-                                :key="vi"
-                                size="small"
-                                closable
-                                @close="row.valueList.splice(vi, 1)"
+                              <span
+                                class="param-row-handle"
+                                style="cursor: move; margin-top: 22px"
+                                title="拖拽排序"
                               >
-                                {{ v }}
-                              </n-tag>
-                              <n-input
-                                v-if="row.showValueInput"
-                                v-model:value="row.newValue"
-                                size="small"
-                                style="width: 180px"
-                                placeholder="输入后回车"
-                                @keydown.enter="confirmParam(row)"
-                                @blur="confirmParam(row)"
-                                autofocus
-                              />
+                                <n-icon size="16">
+                                  <DragOutlined />
+                                </n-icon>
+                              </span>
+                              <div style="flex: 1">
+                                <div class="ro-col-title">param_key</div>
+                                <n-input v-model:value="row.key" placeholder="参数名" />
+                              </div>
+                              <div style="flex: 2">
+                                <div class="ro-col-title"
+                                  >param_value（纯数字按数字类型，加引号按字符串）</div
+                                >
+                                <div class="param-value-list">
+                                  <n-tag
+                                    v-for="(v, vi) in row.valueList"
+                                    :key="vi"
+                                    size="small"
+                                    closable
+                                    @close="row.valueList.splice(vi, 1)"
+                                  >
+                                    {{ v }}
+                                  </n-tag>
+                                  <n-input
+                                    v-if="row.showValueInput"
+                                    v-model:value="row.newValue"
+                                    style="width: 180px"
+                                    placeholder="输入后回车"
+                                    @keydown.enter="confirmParam(row)"
+                                    @blur="confirmParam(row)"
+                                    autofocus
+                                  />
+                                  <n-button v-else dashed @click="row.showValueInput = true">
+                                    + 添加参数值
+                                  </n-button>
+                                </div>
+                              </div>
                               <n-button
-                                v-else
                                 size="small"
-                                dashed
-                                @click="row.showValueInput = true"
+                                type="error"
+                                ghost
+                                style="margin-top: 22px"
+                                @click="removeParam(action, pi)"
                               >
-                                + 添加参数值
+                                删除
                               </n-button>
                             </div>
-                          </div>
-                          <n-button
-                            size="small"
-                            type="error"
-                            ghost
-                            style="margin-top: 22px"
-                            @click="removeParam(action, pi)"
-                          >
-                            删除
-                          </n-button>
-                        </div>
+                          </template>
+                        </Draggable>
                         <n-button size="small" dashed @click="addParam(action)"
                           >+ 添加参数</n-button
                         >
@@ -416,7 +453,9 @@
 
             <div style="margin-left: 100px; margin-top: 16px">
               <n-space>
-                <n-button type="primary" :loading="saving" @click="formSubmit">提交</n-button>
+                <n-button type="primary" :loading="saving" @click="formSubmit">{{
+                  isEdit ? '提交' : '新增'
+                }}</n-button>
                 <n-button @click="resetForm">重置</n-button>
                 <n-button @click="goBack">返回</n-button>
               </n-space>
@@ -448,6 +487,8 @@
   // 所属项目 id（由列表页通过 query 传入）
   const projectId = Number(route.query.project_id);
   const projectName = ref('');
+  // 有 id 为编辑模式，无 id 为新增模式
+  const isEdit = computed(() => !!caseId);
 
   const formValue = reactive({
     name: '',
@@ -562,8 +603,13 @@
         action: s.action ?? '',
         keyword: s.keyword ?? '',
         ...locator(s.locator),
+        argsList: (s.args ?? []).map((x: any) => String(x)),
+        showArgInput: false,
+        newArg: '',
+        editArgIndex: null,
       })),
       paramRows: Object.entries(g.parametrize || {}).map(([key, values]) => ({
+        uid: nextUid(),
         key,
         valueList: (Array.isArray(values) ? values : []).map((x: any) => String(x)),
         showValueInput: false,
@@ -598,6 +644,11 @@
         if (s.locatorPath) {
           item.locator = [s.locatorBy ?? '', s.locatorPath];
         }
+        const args = (s.argsList || [])
+          .map((v: string) => v.trim())
+          .filter((v: string) => v !== '')
+          .map(toTypedValue);
+        if (args.length) item.args = args;
         return item;
       }),
     };
@@ -646,6 +697,10 @@
       keyword: null,
       locatorBy: null,
       locatorPath: '',
+      argsList: [],
+      showArgInput: false,
+      newArg: '',
+      editArgIndex: null,
     });
   }
   function removeStep(group: any, i: number) {
@@ -670,13 +725,19 @@
   }
 
   function addParam(group: any) {
-    group.paramRows.push({ key: '', valueList: [], showValueInput: false, newValue: '' });
+    group.paramRows.push({
+      uid: nextUid(),
+      key: '',
+      valueList: [],
+      showValueInput: false,
+      newValue: '',
+    });
   }
 
   // 回车/失焦确认添加一个参数值
   function confirmParam(row: any) {
     const val = (row.newValue || '').trim();
-    if (val && !row.valueList.includes(val)) row.valueList.push(val);
+    if (val) row.valueList.push(val);
     row.newValue = '';
     row.showValueInput = false;
   }
@@ -717,12 +778,26 @@
     return s;
   }
 
-  // 回车/失焦确认添加一条 args
+  // 回车/失焦确认添加或修改一条 args
   function confirmArg(vp: any) {
     const val = (vp.newArg || '').trim();
-    if (val && !vp.argsList.includes(val)) vp.argsList.push(val);
+    if (val) {
+      if (vp.editArgIndex != null) {
+        vp.argsList[vp.editArgIndex] = val;
+      } else if (!vp.argsList.includes(val)) {
+        vp.argsList.push(val);
+      }
+    }
     vp.newArg = '';
     vp.showArgInput = false;
+    vp.editArgIndex = null;
+  }
+
+  // 点击已有参数标签：进入编辑态并回显原值
+  function startEditArg(vp: any, index: number) {
+    vp.editArgIndex = index;
+    vp.newArg = vp.argsList[index] ?? '';
+    vp.showArgInput = true;
   }
 
   // 可添加的 action 列表（整组从已有 Action 追加；actionsCache 缓存完整 Action 数据供本地展开）
@@ -781,6 +856,10 @@
             s.keyword_id != null ? keywordMap.value[s.keyword_id] ?? String(s.keyword_id) : '',
           locatorBy: s.element_id != null ? elementMap.value[s.element_id]?.by ?? '' : '',
           locatorPath: s.element_id != null ? elementMap.value[s.element_id]?.path ?? '' : '',
+          argsList: [],
+          showArgInput: false,
+          newArg: '',
+          editArgIndex: null,
         })),
         paramRows: [],
         validateRows: [],
@@ -817,8 +896,9 @@
 
   // 加载用例详情：GET /case_ui/case/{id}/，步骤取内联 action_list 并规范化为编辑态
   async function loadCaseDetail() {
+    // 新增模式：没有用例 id，跳过详情加载，仅拉取可选测试步骤
     if (!caseId) {
-      message.error('缺少用例 id');
+      await loadActionOptions();
       return;
     }
     try {
@@ -836,18 +916,27 @@
     }
   }
 
-  // 提交：把编辑后的 action_list 整体回传，PATCH /case_ui/case/{id}/
+  // 提交：编辑走 PATCH /case_ui/case/{id}/；新增走 POST /case_ui/case/
   async function formSubmit() {
     try {
       await formRef.value.validate();
       saving.value = true;
       const action_list = steps.value.map(denormalizeGroup);
-      await http.request({
-        url: `/case_ui/case/${caseId}/`,
-        method: 'patch',
-        data: { name: formValue.name, action_list },
-      });
-      message.success('修改成功');
+      if (isEdit.value) {
+        await http.request({
+          url: `/case_ui/case/${caseId}/`,
+          method: 'patch',
+          data: { name: formValue.name, action_list },
+        });
+        message.success('修改成功');
+      } else {
+        await http.request({
+          url: '/case_ui/case/',
+          method: 'post',
+          data: { name: formValue.name, project_id: projectId, action_list },
+        });
+        message.success('新增成功');
+      }
       goBack();
     } catch (errors: any) {
       console.error('提交失败:', errors);
@@ -859,6 +948,13 @@
 
   // 重置表单
   function resetForm() {
+    if (!isEdit.value) {
+      formValue.name = '';
+      steps.value = [];
+      selectedActionId.value = null;
+      message.success('已重置');
+      return;
+    }
     loadCaseDetail();
     message.success('已重置');
   }
@@ -905,5 +1001,34 @@
   .empty-tip {
     color: #999;
     padding: 12px 0;
+  }
+  .step-args {
+    flex: 1 1 0;
+    min-width: 150px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    :deep(.n-tag) {
+      height: 34px;
+      padding: 0 8px;
+      display: inline-flex;
+      align-items: center;
+    }
+    :deep(.arg-tag) {
+      cursor: pointer;
+    }
+  }
+  .param-value-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    :deep(.n-tag) {
+      height: 34px;
+      padding: 0 8px;
+      display: inline-flex;
+      align-items: center;
+    }
   }
 </style>

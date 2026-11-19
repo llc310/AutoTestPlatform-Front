@@ -90,7 +90,8 @@
                     :render-label="renderElementLabel"
                     placeholder="请选择"
                     clearable
-                    style="width: 130px"
+                    :menu-props="{ style: 'min-width: 220px' }"
+                    style="width: 220px"
                     @focus="loadElements"
                   />
                   <n-button size="small" type="error" ghost @click="removeStep(idx)">
@@ -169,7 +170,7 @@
                     :value="elementIdToName(s.element_id) ?? ''"
                     readonly
                     placeholder="元素"
-                    style="width: 130px"
+                    style="width: 240px"
                   />
                 </template>
                 定位方式: {{ elementIdToOption(s.element_id)?.by || '-' }}，定位值:
@@ -180,7 +181,7 @@
                 :value="String(s.element_id ?? '')"
                 readonly
                 placeholder="元素"
-                style="width: 130px"
+                style="width: 240px"
               />
             </div>
             <span v-if="!detailData.step || detailData.step.length === 0" style="color: #999"
