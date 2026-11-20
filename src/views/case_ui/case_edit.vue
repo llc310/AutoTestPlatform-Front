@@ -171,6 +171,7 @@
                                 <n-select
                                   v-if="!s.locatorBy && !s.locatorPath"
                                   :options="elementOptions"
+                                  :render-label="renderElementLabel"
                                   filterable
                                   clearable
                                   placeholder="选择元素"
@@ -322,9 +323,10 @@
                           >
                             <div style="flex: 1">
                               <div class="ro-col-title">validate_type</div>
-                              <n-input
+                              <n-select
                                 v-model:value="grp.type"
-                                placeholder="如：equals / contains"
+                                :options="validateTypeOptions"
+                                placeholder="选择断言类型"
                               />
                             </div>
                             <n-button
@@ -383,26 +385,35 @@
                               </div>
                               <div style="flex: 1">
                                 <div class="ro-col-title">定位值</div>
-                                <n-input v-model:value="vp.locatorPath" placeholder="定位值" />
+                                <n-select
+                                  v-if="!vp.locatorBy && !vp.locatorPath"
+                                  :options="elementOptions"
+                                  :render-label="renderElementLabel"
+                                  filterable
+                                  clearable
+                                  placeholder="选择元素"
+                                  @update:value="(val: number) => onPickElement(vp, val)"
+                                />
+                                <n-input
+                                  v-else
+                                  v-model:value="vp.locatorPath"
+                                  placeholder="定位值"
+                                />
                               </div>
                             </div>
                             <div style="margin-top: 8px">
                               <div class="ro-col-title"
                                 >args（纯数字按数字类型，加引号按字符串）</div
                               >
-                              <div
-                                style="
-                                  display: flex;
-                                  flex-wrap: wrap;
-                                  gap: 6px;
-                                  align-items: center;
-                                "
-                              >
+                              <div class="step-args">
                                 <n-tag
                                   v-for="(p, ai) in vp.argsList"
                                   :key="ai"
                                   size="small"
                                   closable
+                                  class="arg-tag"
+                                  title="点击修改"
+                                  @click="startEditArg(vp, ai)"
                                   @close="vp.argsList.splice(ai, 1)"
                                 >
                                   {{ p }}
@@ -410,19 +421,13 @@
                                 <n-input
                                   v-if="vp.showArgInput"
                                   v-model:value="vp.newArg"
-                                  size="small"
-                                  style="width: 180px"
+                                  style="width: 150px"
                                   placeholder="输入后回车"
                                   @keydown.enter="confirmArg(vp)"
                                   @blur="confirmArg(vp)"
                                   autofocus
                                 />
-                                <n-button
-                                  v-else
-                                  size="small"
-                                  dashed
-                                  @click="vp.showArgInput = true"
-                                >
+                                <n-button v-else dashed @click="vp.showArgInput = true">
                                   + 添加参数
                                 </n-button>
                               </div>
@@ -468,8 +473,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, computed, onMounted } from 'vue';
-  import { useMessage, useDialog } from 'naive-ui';
+  import { ref, reactive, computed, onMounted, h } from 'vue';
+  import { useMessage, useDialog, NTooltip } from 'naive-ui';
   import { useRoute, useRouter } from 'vue-router';
   import type { FormRules } from 'naive-ui';
   import { DownOutlined, UpOutlined, DragOutlined } from '@vicons/antd';
@@ -504,6 +509,14 @@
     { label: 'tag name', value: 'tag name' },
     { label: 'class name', value: 'class name' },
     { label: 'css selector', value: 'css selector' },
+  ];
+
+  // 断言类型（与后端 assert_util 支持的四种一致）
+  const validateTypeOptions = [
+    { label: 'equals（等于）', value: 'equals' },
+    { label: 'contains（包含）', value: 'contains' },
+    { label: 'db_equals（数据库等于）', value: 'db_equals' },
+    { label: 'db_contains（数据库包含）', value: 'db_contains' },
   ];
 
   // 测试步骤列表（action_list 内联步骤对象，前端编辑态已把 locator 拆成 by/path、parametrize/validate 拆成行）
@@ -575,6 +588,32 @@
     }))
   );
 
+  // 元素选项悬停时展示定位方式、定位值详细信息
+  function renderElementLabel(option: any) {
+    const by = option.by || '-';
+    const path = option.path || '-';
+    return h(
+      NTooltip,
+      { trigger: 'hover', width: 320 },
+      {
+        trigger: () =>
+          h(
+            'span',
+            {
+              style:
+                'display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom',
+            },
+            option.label
+          ),
+        default: () =>
+          h('div', { style: 'line-height:1.7;word-break:break-all' }, [
+            h('div', null, [h('span', { style: 'color:#888' }, '定位方式：'), by]),
+            h('div', null, [h('span', { style: 'color:#888' }, '定位值：'), path]),
+          ]),
+      }
+    );
+  }
+
   // 选中元素后自动回填定位方式与定位值
   function onPickElement(step: any, val: number) {
     const opt = elementOptions.value.find((o) => o.value === val);
@@ -624,6 +663,7 @@
           argsList: (vp.actual_result?.args ?? []).map((x: any) => String(x)),
           showArgInput: false,
           newArg: '',
+          editArgIndex: null,
         })),
       })),
     };
@@ -766,6 +806,7 @@
       argsList: [],
       showArgInput: false,
       newArg: '',
+      editArgIndex: null,
     };
   }
 
